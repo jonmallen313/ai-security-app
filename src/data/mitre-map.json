@@ -1,0 +1,43 @@
+{
+    "Initial Access": {
+      "Drive-by Compromise": ["drive-by", "malicious website", "exploit kit"],
+      "Phishing": ["phishing", "email attachment", "malicious link"]
+    },
+    "Execution": {
+      "PowerShell": ["powershell", "script execution", "Invoke-Command"],
+      "Command and Scripting Interpreter": ["cmd.exe", "bash", "sh", "terminal"]
+    },
+    "Persistence": {
+      "Registry Run Keys / Startup Folder": ["run key", "startup folder", "registry persistence"]
+    },
+    "Privilege Escalation": {
+      "Valid Accounts": ["admin login", "privilege escalation", "elevated access"]
+    },
+    "Defense Evasion": {
+      "Obfuscated Files or Information": ["base64", "obfuscated", "encoded command"]
+    },
+    "Credential Access": {
+      "Brute Force": ["ssh login", "password guessing", "multiple failed login", "failed ssh"],
+      "Credential Dumping": ["mimikatz", "lsass", "sam", "security account manager"]
+    },
+    "Discovery": {
+      "System Information Discovery": ["systeminfo", "hostname", "whoami"],
+      "Network Service Scanning": ["nmap", "port scan", "recon"]
+    },
+    "Lateral Movement": {
+      "Remote Services": ["smb", "rdp", "remote desktop", "psexec"]
+    },
+    "Collection": {
+      "Clipboard Data": ["clipboard", "copy data", "paste buffer"]
+    },
+    "Command and Control": {
+      "Application Layer Protocol": ["http", "dns", "c2", "command and control"]
+    },
+    "Exfiltration": {
+      "Exfiltration Over Web Service": ["exfiltrate", "upload", "send data"]
+    },
+    "Impact": {
+      "Data Destruction": ["delete files", "wiper", "destroy", "format drive"]
+    }
+  }
+  
