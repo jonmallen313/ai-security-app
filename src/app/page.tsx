@@ -17,6 +17,7 @@ import {Button} from '@/components/ui/button';
 import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 import {useToast} from "@/hooks/use-toast";
 import MITREHeatmap from '@/components/MITREHeatmap';
+import IncidentTrendsChart from '@/components/IncidentTrendsChart';
 
 export default function Dashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -92,6 +93,11 @@ export default function Dashboard() {
                 <section className="mt-8">
                   <h2 className="text-xl font-semibold">MITRE ATT&amp;CK Heatmap</h2>
                   <MITREHeatmap />
+                </section>
+
+                <section className="mt-8">
+                  <h2 className="text-xl font-semibold">Incident Trends</h2>
+                  <IncidentTrendsChart incidents={incidents} />
                 </section>
               </main>
             </div>
