@@ -3,8 +3,8 @@
 import React from 'react';
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -59,20 +59,29 @@ const IncidentTrendsChart: React.FC<IncidentTrendsChartProps> = ({ incidents }) 
     Low: '#29ABE2',    // Blue
   };
 
+  // Define a more colorful palette
+  const barColors = {
+    High: '#E64A19',   // Dark Orange
+    Medium: '#FDD835', // Yellow
+    Low: '#4CAF50',    // Green
+  };
+
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" />
         <YAxis />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="High" stroke={threatLevelColors.High} name="High Threat" />
-        <Line type="monotone" dataKey="Medium" stroke={threatLevelColors.Medium} name="Medium Threat" />
-        <Line type="monotone" dataKey="Low" stroke={threatLevelColors.Low} name="Low Threat" />
-      </LineChart>
+        <Bar dataKey="High" fill={barColors.High} name="High Threat" />
+        <Bar dataKey="Medium" fill={barColors.Medium} name="Medium Threat" />
+        <Bar dataKey="Low" fill={barColors.Low} name="Low Threat" />
+      </BarChart>
     </ResponsiveContainer>
   );
 };
 
 export default IncidentTrendsChart;
+
+    
