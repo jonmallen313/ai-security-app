@@ -10,7 +10,8 @@ import {Textarea} from '@/components/ui/textarea';
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';
 import {toast} from '@/hooks/use-toast';
-import {Check, AlertTriangle, MessageSquare, MessageSquarePlus} from 'lucide-react';
+import {Check, AlertTriangle, MessageSquare} from 'lucide-react';
+import ActivityFeed from '@/components/ActivityFeed';
 
 const IncidentsPage = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -165,13 +166,16 @@ const IncidentsPage = () => {
           <div className="flex flex-wrap gap-4">
             <Button onClick={handleExportSelected}>Export Selected</Button>
             <Button onClick={handleAskAgentforce}>
-              Ask Agentforce <MessageSquarePlus className="h-4 w-4 ml-2"/>
+              Ask Agentforce <MessageSquare className="h-4 w-4 ml-2"/>
             </Button>
             <Button onClick={handleMarkAsResolved}>Mark as Resolved</Button>
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
       )}
+      <section className="h-96">
+        <ActivityFeed/>
+      </section>
     </div>
   );
 };
