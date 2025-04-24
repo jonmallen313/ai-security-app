@@ -1,0 +1,33 @@
+
+[
+  {
+    "time": "2024-07-23 14:30:00",
+    "sourceIp": "203.0.113.45",
+    "threatLevel": "Medium",
+    "description": "Multiple failed login attempts detected."
+  },
+  {
+    "time": "2024-07-23 15:45:00",
+    "sourceIp": "198.51.100.12",
+    "threatLevel": "High",
+    "description": "Suspicious file modification detected in system directory."
+  },
+  {
+    "time": "2024-07-23 16:20:00",
+    "sourceIp": "192.0.2.67",
+    "threatLevel": "Low",
+    "description": "Unusual network traffic observed on port 8080."
+  },
+  {
+    "time": "2024-07-23 17:55:00",
+    "sourceIp": "10.0.0.5",
+    "threatLevel": "Critical",
+    "description": "Ransomware activity detected. Immediate action required."
+  },
+  {
+    "time": "2024-07-23 18:30:00",
+    "sourceIp": "172.217.160.142",
+    "threatLevel": "Medium",
+    "description": "Possible phishing attempt detected via email."
+  }
+]
