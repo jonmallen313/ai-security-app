@@ -10,8 +10,9 @@ import {Textarea} from '@/components/ui/textarea';
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';
 import {toast} from '@/hooks/use-toast';
-import {Check, AlertTriangle, MessageSquare} from 'lucide-react';
+import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
 import ActivityFeed from '@/components/ActivityFeed';
+import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 
 const IncidentsPage = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -55,14 +56,26 @@ const IncidentsPage = () => {
     });
   };
 
-  const handleAskAgentforce = () => {
-    // Mock Agentforce functionality
-    selectedIncidents.forEach(incidentId => {
-      toast({
-        title: `Sent incident ${incidentId} to Agentforce`,
-        description: 'Recommendation: Mitigation: Disable external SSH access',
+  const handleAskAgentforce = async (incident: Incident) => {
+    try {
+      const analysisResult = await analyzeSecurityIncident({
+        time: incident.time,
+        sourceIp: incident.sourceIp,
+        threatLevel: incident.threatLevel,
+        description: incident.description,
       });
-    });
+      toast({
+        title: `Agentforce Analysis`,
+        description: analysisResult.analysis,
+      });
+    } catch (error) {
+      console.error('Error analyzing incident:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to analyze incident. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleMarkAsResolved = () => {
@@ -153,6 +166,16 @@ const IncidentsPage = () => {
                       <p>Needs Review</p>
                     </TooltipContent>
                   </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
+                        <Bot className="h-4 w-4"/>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Ask Agentforce</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </CardContent>
               </Card>
             );
@@ -165,9 +188,6 @@ const IncidentsPage = () => {
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
             <Button onClick={handleExportSelected}>Export Selected</Button>
-            <Button onClick={handleAskAgentforce}>
-              Ask Agentforce <MessageSquare className="h-4 w-4 ml-2"/>
-            </Button>
             <Button onClick={handleMarkAsResolved}>Mark as Resolved</Button>
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
