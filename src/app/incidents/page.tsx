@@ -5,7 +5,6 @@ import {getIncidents, Incident} from '@/services/incidents';
 import MITREHeatmap from '@/components/MITREHeatmap';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/card';
 import {Checkbox} from '@/components/ui/checkbox';
-import {Badge} from '@/components/ui/badge';
 import {Textarea} from '@/components/ui/textarea';
 import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';

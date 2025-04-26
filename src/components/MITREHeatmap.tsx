@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import incidentsData from '../../public/incidents.json';
-import mitreMapData from '../data/mitre-map.json';
+import incidentsData from '@/data/incidents.json';
+import mitreMapData from '@/data/mitre-map.json';
 
 type Incident = {
   time: string;
