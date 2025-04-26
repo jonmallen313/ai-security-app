@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import incidentsData from '@/public/incidents.json';
 import mitreMapData from '@/data/mitre-map.json';
 
 type Incident = {
@@ -16,8 +15,24 @@ type MitreMap = {
 };
 
 const MITREHeatmap: React.FC = () => {
-  const incidents: Incident[] = incidentsData as Incident[];
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const mitreMap: MitreMap = mitreMapData as MitreMap;
+
+  useState(() => {
+    const loadIncidents = async () => {
+      try {
+        const response = await fetch('/incidents.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setIncidents(data as Incident[]);
+      } catch (error) {
+        console.error("Could not load incidents from local file:", error);
+      }
+    };
+    loadIncidents();
+  }, []);
 
   const tactics: string[] = Object.keys(mitreMap);
   const techniques: string[] = tactics.flatMap(tactic => Object.keys(mitreMap[tactic]));
