@@ -13,6 +13,7 @@ import {
   SidebarSeparator
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -60,6 +61,7 @@ export default function RootLayout({
             <div className="flex flex-col flex-1 p-4 space-y-4">
               <header className="flex items-center justify-between h-16 border-b bg-background">
                 <h1 className="text-2xl font-semibold">SecureView Dashboard</h1>
+                <ThemeToggle />
               </header>
               <main className="flex-1 overflow-y-auto">
                 {children}
@@ -72,3 +74,4 @@ export default function RootLayout({
     </html>
   );
 }
+
