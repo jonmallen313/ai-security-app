@@ -144,16 +144,6 @@ const ActivityFeed: React.FC = () => {
   }, [matchIncidentToMitre, activityFeed]);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    if (isRunning) {
-      intervalId = setInterval(() => {
-        generateActivityItem();
-      }, 5000 + Math.random() * 5000);
-    }
-    return () => clearInterval(intervalId);
-  }, [isRunning, generateActivityItem]);
-
-  useEffect(() => {
     // Scroll to the top when new items are added
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
