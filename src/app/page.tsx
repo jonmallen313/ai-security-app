@@ -1,62 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {getIncidents, Incident} from '@/services/incidents';
-import IncidentTrendsChart from '@/components/IncidentTrendsChart';
-import ThreatLevelDistribution from '@/components/ThreatLevelDistribution';
-import SourceIpBarChart from '@/components/SourceIpBarChart';
-import CumulativeIncidentsAreaChart from '@/components/CumulativeIncidentsAreaChart';
-import {Card, CardHeader, CardTitle, CardContent} from '@/components/ui/card';
+import React, { useEffect } from "react";
+import Dashboard from "@/components/Dashboard";
+import { useTheme } from "@/hooks/use-theme";
 
-export default function Dashboard() {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
+export default function Home() {
+  const { setTheme, resolvedTheme } = useTheme();
 
   useEffect(() => {
-    const loadIncidents = async () => {
-      const data = await getIncidents();
-      setIncidents(data);
-    };
-    loadIncidents();
-  }, []);
+    document.documentElement.setAttribute('data-theme', resolvedTheme);
+  }, [resolvedTheme]);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Incident Trends</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <IncidentTrendsChart incidents={incidents} />
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Threat Level Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ThreatLevelDistribution incidents={incidents} />
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Top Source IPs</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SourceIpBarChart incidents={incidents} />
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-md">
-        <CardHeader>
-          <CardTitle>Cumulative Incidents Over Time</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CumulativeIncidentsAreaChart incidents={incidents} />
-        </CardContent>
-      </Card>
-    </div>
+    <main className="min-h-screen flex flex-col">
+      <div className="flex justify-end p-4">
+        <button onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+          {resolvedTheme === "dark" ? "Light Mode" : "Dark Mode"}
+        </button>
+      </div>
+        <Dashboard/>
+    </main>
   );
 }
-

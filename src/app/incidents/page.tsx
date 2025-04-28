@@ -10,17 +10,23 @@ import {Button} from '@/components/ui/button';
 import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';
 import {toast} from '@/hooks/use-toast';
 import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
+import {Message} from '@/components/ui/chat-dialog';
 import ActivityFeed from '@/components/ActivityFeed';
 import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
+import ChatModal from '@/components/ui/chat-dialog';
+
 
 const IncidentsPage = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
   const [analystComments, setAnalystComments] = useState<{[key: string]: string}>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedIncident, setSelectedIncident] = useState<Incident|null>(null);
+    const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     const loadIncidents = async () => {
-      const data = await getIncidents();
+        const data = await getIncidents();
       setIncidents(data);
     };
     loadIncidents();
@@ -56,25 +62,7 @@ const IncidentsPage = () => {
   };
 
   const handleAskAgentforce = async (incident: Incident) => {
-    try {
-      const analysisResult = await analyzeSecurityIncident({
-        time: incident.time,
-        sourceIp: incident.sourceIp,
-        threatLevel: incident.threatLevel,
-        description: incident.description,
-      });
-      toast({
-        title: `Agentforce Analysis`,
-        description: analysisResult.analysis,
-      });
-    } catch (error) {
-      console.error('Error analyzing incident:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to analyze incident. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    setSelectedIncident(incident)
   };
 
   const handleMarkAsResolved = () => {
@@ -92,6 +80,7 @@ const IncidentsPage = () => {
   };
 
   return (
+        <div>    
     <div className="flex flex-col gap-4">
       <section>
         <h2 className="text-xl font-semibold mb-4">MITRE ATT&amp;CK Heatmap</h2>
@@ -166,11 +155,22 @@ const IncidentsPage = () => {
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
-                        <Bot className="h-4 w-4"/>
-                      </Button>
-                    </TooltipTrigger>
+                      <TooltipTrigger asChild>
+                          <Dialog open={selectedIncident?.time === incident.time && selectedIncident.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
+                                <DialogTrigger asChild>
+                                        <Button variant="outline" size="icon">
+                                            <Bot className="h-4 w-4"/>
+                                        </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <ChatModal
+                                        incident={incident}
+                                        initialMessages={messages}
+                                        setMessages={setMessages}
+                                        />
+                                </DialogContent>
+                            </Dialog>
+                      </TooltipTrigger>
                     <TooltipContent>
                       <p>Ask Agentforce</p>
                     </TooltipContent>
@@ -195,6 +195,7 @@ const IncidentsPage = () => {
       <section className="h-96">
         <ActivityFeed/>
       </section>
+    </div>
     </div>
   );
 };
