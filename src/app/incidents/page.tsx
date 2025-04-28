@@ -31,7 +31,7 @@ const IncidentsPage = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
   const [analystComments, setAnalystComments] = useState<{ [key: string]: string }>({});
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isChatModalOpen, setIsChatModalOpen] = useState<boolean>(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +92,7 @@ const IncidentsPage = () => {
   const handleAskAgentforce = async (incident: Incident) => {
     if (!incident) return;
     setSelectedIncident(incident);
-    setIsModalOpen(true);
+    setIsChatModalOpen(true);
     setMessages([
       {
         role: "assistant",
@@ -117,7 +117,7 @@ const IncidentsPage = () => {
 
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setIsChatModalOpen(false);
     setSelectedIncident(null);
   };
 
@@ -259,7 +259,7 @@ const IncidentsPage = () => {
         </Table>
         </section>
           <section>
-          {selectedIncident && (
+          {isChatModalOpen && selectedIncident && (
             <ChatDialog
               messages={messages}
               incident={selectedIncident}

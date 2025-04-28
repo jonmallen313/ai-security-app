@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { analyzeSecurityIncident } from '@/ai/flows/analyze-security-incident';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Draggable from 'react-draggable';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -58,24 +59,27 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ incident, onSendMessage, isLoad
   };  
 
   return (
-            <>
+      <Draggable handle=".handle">
+        <div className="relative w-96 h-96 bg-gray-900 text-white rounded-md shadow-lg z-50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+            <div className="handle cursor-move bg-gray-800 p-3 rounded-t-md">
+                Agentforce Chat
+                <Button onClick={onClose} className="absolute right-2 top-2">
+                    X
+                </Button>
+            </div>
 
-            <ScrollArea className="h-[300px] mb-4 overflow-y-scroll">
+            <ScrollArea className="h-[calc(100% - 70px)] p-4">
                 <div className="space-y-2">
-                    <div
-                        className={`p-3 rounded-lg max-w-[75%] bg-gray-800 text-white mr-auto`}
-                    >
-                        <div className="text-sm font-medium">
-                            Incident Details:
-                        </div>
-                        <p>Time: {incident.time}</p>
-                        <p>Source IP: {incident.sourceIp}</p>
-                        <p>Description: {incident.description}</p>
+                    <div className="text-sm font-medium">
+                        Incident Details:
                     </div>
+                    <p>Time: {incident.time}</p>
+                    <p>Source IP: {incident.sourceIp}</p>
+                    <p>Description: {incident.description}</p>
                     {localMessages.map((message, index) => (
                         <div
                             key={index}
-                            className={`p-3 rounded-lg max-w-[75%] ${message.role === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-gray-800 text-white mr-auto'
+                            className={`p-3 rounded-lg max-w-[75%] ${message.role === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-gray-700 text-white mr-auto'
                                 }`}
                         >
                             <div className="text-sm font-medium">
@@ -87,9 +91,10 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ incident, onSendMessage, isLoad
                     <div ref={messagesEndRef} />
                 </div>
             </ScrollArea>
-            <div className="flex items-center space-x-2 border rounded-lg p-2">
+
+            <div className="flex items-center space-x-2 border-t border-gray-700 p-4">
                 <Input
-                    className='flex-grow'
+                    className='flex-grow bg-gray-800 border-gray-700 text-white'
                     type="text"
                     value={newMessage}
                     onChange={handleInputChange}
@@ -101,7 +106,8 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ incident, onSendMessage, isLoad
             {isLoading && (
                 <div className="text-sm text-gray-500 mt-2">Loading...</div>
             )}
-            </>
+        </div>
+    </Draggable>
   );
 };
 
