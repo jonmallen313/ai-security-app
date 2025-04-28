@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table"
 import ActivityFeedOverlay from '@/components/ActivityFeed';
 import { analyzeSecurityIncident, AnalyzeSecurityIncidentOutput } from '@/ai/flows/analyze-security-incident';
+import {cn} from "@/lib/utils";
 
 interface AgentResponse {
   role: "assistant" | "user"
@@ -36,6 +37,8 @@ const IncidentsPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isActivityFeedOpen, setIsActivityFeedOpen] = useState(false);
+  const [activityFeedPosition, setActivityFeedPosition] = useState({ top: 0, left: 0 });
+  const [chatDialogPosition, setChatDialogPosition] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
     const loadIncidents = async () => {
@@ -127,11 +130,11 @@ const IncidentsPage = () => {
         content: response.content,
       }]);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing security incident:", error);
       setMessages((prev) => [...prev, {
         role: "assistant",
-        content: "Failed to analyze the incident. Please try again later.",
+        content: `Failed to analyze the incident. Please try again later. ${error.message}`,
       }]);
     } finally {
       setIsLoading(false);
@@ -272,7 +275,12 @@ const IncidentsPage = () => {
           </TableBody>
         </Table>
         </section>
-          <section>
+          <section className={cn(
+              isChatModalOpen || isActivityFeedOpen ? 'absolute' : 'relative',
+              'flex flex-col',
+              isChatModalOpen && isActivityFeedOpen ? 'md:flex-row' : '',
+              'items-end justify-end gap-4'
+          )}>
           {isChatModalOpen && selectedIncident && (
             <ChatDialog
               messages={messages}
@@ -282,7 +290,6 @@ const IncidentsPage = () => {
               onClose={handleCloseModal}
               setMessages={setMessages}
             />)}
-              </section>
               <Button onClick={() => setIsActivityFeedOpen(!isActivityFeedOpen)}>
                 {isActivityFeedOpen ? "Hide Activity Feed" : "Show Activity Feed"}
               </Button>
@@ -306,6 +313,7 @@ const IncidentsPage = () => {
                     ]}
                   />
                 )}
+                  </section>
     </>
   );
 };
