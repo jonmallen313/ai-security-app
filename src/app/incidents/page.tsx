@@ -1,15 +1,16 @@
 'use client';
 
-import React, {useState, useEffect, useCallback} from 'react';
-import {getIncidents, Incident} from '@/services/incidents';
-import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/card';
-import {Checkbox} from '@/components/ui/checkbox';
-import {Textarea} from '@/components/ui/textarea';
-import {Button} from '@/components/ui/button';
-import {Tooltip, TooltipTrigger, TooltipContent} from "@radix-ui/react-tooltip";
-import {toast} from '@/hooks/use-toast';
-import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
-import {Message, ChatDialog} from '@/components/ui/chat-dialog';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getIncidents, Incident } from '@/services/incidents';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from "@radix-ui/react-tooltip";
+import { toast } from '@/hooks/use-toast';
+import { Check, AlertTriangle, MessageSquare, Bot } from 'lucide-react';
+import ChatDialog, { Message } from "@/components/ui/chat-dialog";
+
 import {
   Table,
   TableHeader,
@@ -21,21 +22,24 @@ import {
 } from "@/components/ui/table"
 import ActivityFeedOverlay from '@/components/ActivityFeed';
 
+interface AgentResponse {
+  role: "assistant" | "user"
+  content: string;
+}
 
 const IncidentsPage = () => {
-  
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
-  const [analystComments, setAnalystComments] = useState<{[key: string]: string}>({});
+  const [analystComments, setAnalystComments] = useState<{ [key: string]: string }>({});
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedIncident, setSelectedIncident] = useState<Incident|null>(null);
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
 
   useEffect(() => {
     const loadIncidents = async () => {
-        const data = await getIncidents();
+      const data = await getIncidents();
       setIncidents(data);
     };
     loadIncidents();
@@ -46,33 +50,33 @@ const IncidentsPage = () => {
       const isSelected = prevSelectedIncidents.includes(incidentId);
       if (isSelected) {
         return prevSelectedIncidents.filter((id) => id !== incidentId);
-      } else{
+      } else {
         return [...prevSelectedIncidents, incidentId];
       }
     });
   };
 
   const handleCommentChange = (incidentId: string, comment: string) => {
-    setAnalystComments(prev => ({...prev, [incidentId]: comment}));
+    setAnalystComments(prev => ({ ...prev, [incidentId]: comment }));
   };
-  
+
   const handleTagIncident = (incident: Incident, tag: string) => {
     toast({
       title: `Incident ${incident.id} tagged as ${tag}`
     });
   };
 
-  const handleExportSelected = () => {   
+  const handleExportSelected = () => {
     // Mock export functionality
     const selectedData = incidents.filter(incident => selectedIncidents.includes(incident.id));
     console.log('Exporting:', selectedData);
-    toast({title: `Exported ${selectedIncidents.length} incidents`});
+    toast({ title: `Exported ${selectedIncidents.length} incidents` });
   };
 
 
   const handleMarkAsResolved = () => {
     // Mock Resolve functionality
-    toast({title: `Marked ${selectedIncidents.length} incidents as Resolved`});
+    toast({ title: `Marked ${selectedIncidents.length} incidents as Resolved` });
 
   };
 
@@ -96,35 +100,39 @@ const IncidentsPage = () => {
     ]);
   };
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string): Promise<void> => {
     if (!selectedIncident) return;
     setIsLoading(true);
     setMessages((prev) => [...prev, { role: "user", content: message }]);
-    const agentResponse = await fetchAgentResponse(message, selectedIncident);
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: agentResponse },
-    ]);
+
+    const response = await agentResponse(message, selectedIncident);
+    setMessages((prev) => [...prev, {
+      role: response.role,
+      content: response.content,
+    }]);
+
     setIsLoading(false);
   };
 
-    const handleCloseModal = () => {
-      setIsModalOpen(false);
-      setSelectedIncident(null);
-    };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedIncident(null);
+  };
+
+
+  const agentResponse = async (message: string, incident: Incident): Promise<AgentResponse> => {
+
+    return { role: "assistant", content: `Agent response to: ${message} regarding incident: ${incident.id}` };
+  };
 
   return (
     <>
-    
-    
-        
-            
       <section>
         <h2 className="text-xl font-semibold mb-4">Recent Security Incidents</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {incidents.map((incident, index) => {
-            
+          {incidents.map((incident) => {
+
             const incidentId = incident.id;
             return (
               <Card key={incident.id} className="shadow-md">
@@ -158,7 +166,7 @@ const IncidentsPage = () => {
                 <CardContent className="flex justify-around">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'False Positive') }>
+                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'False Positive')}>
                         <Check className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
@@ -169,9 +177,9 @@ const IncidentsPage = () => {
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Confirmed Threat') }>
+                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Confirmed Threat')}>
                         <AlertTriangle className="h-4 w-4" />
-                      </Button>                
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Confirmed Threat</p>
@@ -180,7 +188,7 @@ const IncidentsPage = () => {
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Needs Review') }>
+                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Needs Review')}>
                         <MessageSquare className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
@@ -189,14 +197,14 @@ const IncidentsPage = () => {
                     </TooltipContent>
                   </Tooltip>
                   <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
-                          <Bot className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
+                    <TooltipTrigger asChild>
+                      <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
+                        <Bot className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
                     <TooltipContent>
                       <p>Ask Agentforce</p>
-                        
+
 
                     </TooltipContent>
                   </Tooltip>
@@ -216,55 +224,54 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-       )}
+      )}
+
+      <section>
+        <Table>
+          <TableCaption>A list of security incidents and their MITRE ATT&amp;CK techniques.</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Time</TableHead>
+              <TableHead>Source IP</TableHead>
+              <TableHead>Threat Level</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>MITRE Tactic</TableHead>
+              <TableHead>MITRE Technique</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {incidents.map((incident) => (
+              <TableRow key={incident.id}>
+                <TableCell className="font-medium">{incident.time}</TableCell>
+                <TableCell>{incident.sourceIp}</TableCell>
+                <TableCell>{incident.threatLevel}</TableCell>
+                <TableCell>{incident.description}</TableCell>
+                <TableCell className={incident.mitreTactic === 'N/A' ? 'text-muted-foreground' : ''}>
+                  {incident.mitreTactic}
+                </TableCell>
+                <TableCell className={incident.mitreTechnique === 'N/A' ? 'text-muted-foreground' : ''}>
+                  {incident.mitreTechnique}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
         <section>
-          <Table>
-        <TableCaption>A list of security incidents and their MITRE ATT&CK techniques.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Time</TableHead>
-            <TableHead>Source IP</TableHead>
-            <TableHead>Threat Level</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>MITRE Tactic</TableHead>
-            <TableHead>MITRE Technique</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {incidents.map((incident, index) => (
-            <TableRow key={index}>
-              <TableCell className="font-medium">{incident.time}</TableCell>
-              <TableCell>{incident.sourceIp}</TableCell>
-             <TableCell>{incident.threatLevel}</TableCell>
-              <TableCell>{incident.description}</TableCell>
-              <TableCell>N/A</TableCell>
-              <TableCell>N/A</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          {selectedIncident && (
+            <ChatDialog
+              messages={messages}
+              incident={selectedIncident}
+              isLoading={isLoading}
+              onSendMessage={handleSendMessage}
+              onClose={handleCloseModal}
+              initialMessages={[]}
+              setMessages={setMessages}
+            />)}
+          <ActivityFeedOverlay events={[]} />
         </section>
-                    
-         {selectedIncident !== null && (
-          
-          
-              {selectedIncident && (
-                 <ChatDialog
-                  messages={messages}
-                  setMessages={setMessages}
-                  incident={selectedIncident}
-                  isLoading={isLoading}
-                  onSendMessage={handleSendMessage}
-                  onClose={handleCloseModal}
-                />   
-
-              )}
-            
-          
-        )}
-                <ActivityFeedOverlay events={[]}/>
-        </>
+      </section>
+    </>
   );
 };
 
