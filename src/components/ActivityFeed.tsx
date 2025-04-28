@@ -15,6 +15,9 @@ import {Button} from '@/components/ui/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import mitreMapData from '@/data/mitre-map.json';
+import Draggable from 'react-draggable';
+import {Resizable} from 'react-resizable';
+import 'react-resizable/css/styles.css';
 
 type MitreMap = {
   [tactic: string]: {
@@ -39,6 +42,17 @@ const ActivityFeed: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const mitreMap: MitreMap = mitreMapData as MitreMap;
+  const [minimized, setMinimized] = useState(false);
+  const [position, setPosition] = useState({x: 20, y: 20});
+  const [size, setSize] = useState({width: 400, height: 300});
+
+  const handleDrag = (e: any, ui: any) => {
+    setPosition({x: ui.x, y: ui.y});
+  };
+
+  const handleResize = (event: any, {size}: any) => {
+    setSize(size);
+  };
 
   useEffect(() => {
     const loadIncidents = async () => {
@@ -168,53 +182,91 @@ const ActivityFeed: React.FC = () => {
   const filteredFeed =
     filter === 'all' ? activityFeed : activityFeed.filter(item => item.source === filter);
 
+  const handleMinimize = () => {
+    setMinimized(!minimized);
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-2">
-        <h3 className="text-lg font-semibold">Live Activity Feed</h3>
-        <div className="flex gap-2 items-center">
-          <Select value={filter} onValueChange={value => setFilter(value as any)}>
-            <SelectTrigger className="w-[180px] h-8">
-              <SelectValue placeholder="Filter by Source"/>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Sources</SelectItem>
-              <SelectItem value="System">System</SelectItem>
-              <SelectItem value="Analyst">Analyst</SelectItem>
-              <SelectItem value="Agentforce">Agentforce</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" size="icon" onClick={toggleRunning}>
-            {isRunning ? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>}
-          </Button>
-        </div>
-      </div>
-      <ScrollArea className="flex-1 rounded-md border p-2">
-        <div ref={scrollRef} className="overflow-y-auto flex flex-col-reverse">
-          {filteredFeed.map(item => (
-            <div key={item.id} className="py-2 border-b last:border-b-0">
-              <div className="flex items-center space-x-2">
-                {getIconForType(item.type)}
-                <p className="text-sm font-medium">{item.message}</p>
+    <Draggable
+      handle=".handle"
+      position={position}
+      onDrag={handleDrag}
+    >
+      <div style={{position: 'fixed', zIndex: 1000, top: 0, left: 0}}>
+        <Resizable
+          width={size.width}
+          height={size.height}
+          onResize={handleResize}
+          minConstraints={[200, 150]}
+          maxConstraints={[800, 600]}
+        >
+          <div
+            className="bg-secondary rounded-md border shadow-md"
+            style={{
+              width: size.width,
+              height: size.height,
+              overflow: 'hidden',
+              display: minimized ? 'flex' : 'block',
+              flexDirection: 'column',
+            }}
+          >
+            <div className="handle bg-accent p-2 cursor-move flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Live Activity Feed</h3>
+              <div>
+                <Button variant="outline" size="icon" onClick={handleMinimize}>
+                  {minimized ? <Play className="h-4 w-4"/> : <Pause className="h-4 w-4"/>}
+                </Button>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {new Date(item.timestamp).toLocaleTimeString()} - {item.source}
-              </div>
-              {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
-                <div className="text-xs text-gray-500">
-                  Correlated Incidents: {item.correlatedIncidents.join(', ')}
+            </div>
+            {!minimized && (
+              <div className="flex flex-col h-full">
+                <div className="flex items-center justify-between p-2">
+                  <Select value={filter} onValueChange={value => setFilter(value as any)}>
+                    <SelectTrigger className="w-[180px] h-8">
+                      <SelectValue placeholder="Filter by Source"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Sources</SelectItem>
+                      <SelectItem value="System">System</SelectItem>
+                      <SelectItem value="Analyst">Analyst</SelectItem>
+                      <SelectItem value="Agentforce">Agentforce</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={toggleRunning}>
+                    {isRunning ? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>}
+                  </Button>
                 </div>
-              )}
-            </div>
-          ))}
-          {filteredFeed.length === 0 && (
-            <div className="py-4 text-center text-muted-foreground">
-              No activities to display.
-            </div>
-          )}
-        </div>
-      </ScrollArea>
-    </div>
+                <ScrollArea className="flex-1 rounded-md border p-2">
+                  <div ref={scrollRef} className="overflow-y-auto flex flex-col-reverse">
+                    {filteredFeed.map(item => (
+                      <div key={item.id} className="py-2 border-b last:border-b-0">
+                        <div className="flex items-center space-x-2">
+                          {getIconForType(item.type)}
+                          <p className="text-sm font-medium">{item.message}</p>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(item.timestamp).toLocaleTimeString()} - {item.source}
+                        </div>
+                        {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
+                          <div className="text-xs text-gray-500">
+                            Correlated Incidents: {item.correlatedIncidents.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {filteredFeed.length === 0 && (
+                      <div className="py-4 text-center text-muted-foreground">
+                        No activities to display.
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
+          </div>
+        </Resizable>
+      </div>
+    </Draggable>
   );
 };
 
