@@ -73,21 +73,18 @@ const IncidentsPage = () => {
     // Mock export functionality
     const selectedData = incidents.filter(incident => selectedIncidents.includes(`${incident.time}-${incident.sourceIp}`));
     console.log('Exporting:', selectedData);
-    toast({
-      title: `Exported ${selectedIncidents.length} incidents`,
-    });
+    toast({title: `Exported ${selectedIncidents.length} incidents`});
   };
 
   const handleAskAgentforce = async (incident: Incident) => {
     setSelectedIncident(incident)
-	setIsModalOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleMarkAsResolved = () => {
     // Mock Resolve functionality
-    toast({
-      title: `Marked ${selectedIncidents.length} incidents as Resolved`,
-    });
+    toast({title: `Marked ${selectedIncidents.length} incidents as Resolved`});
+
   };
 
   const handleEscalateToTier2 = () => {
@@ -96,6 +93,7 @@ const IncidentsPage = () => {
       title: `Escalated ${selectedIncidents.length} incidents to Tier 2`,
     });
   };
+
 
   const matchIncidentToMitre = (incident: Incident): { tactic: string; technique: string } | null => {
     for (const tactic in mitreMap) {
