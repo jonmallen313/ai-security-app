@@ -10,7 +10,7 @@ import {Tooltip, TooltipTrigger, TooltipContent} from "@radix-ui/react-tooltip";
 import {toast} from '@/hooks/use-toast';
 import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
 import {Message, ChatDialog} from '@/components/ui/chat-dialog';
-import {Dialog, DialogTrigger, DialogContent} from "@/components/ui/dialog"
+import {Dialog, DialogContent} from "@/components/ui/dialog"
 import mitreMapData from '@/data/mitre-map.json';
 import { fetchAgentResponse } from '@/services/agent';
 import {
@@ -235,7 +235,7 @@ const IncidentsPage = () => {
         </div>
       </section>
 
-      {selectedIncidents.length > 0 && (
+      {selectedIncidents.length > 0 ? (
         <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
@@ -244,7 +244,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-      )}
+      ) : null}
 
         <section>
           <Table>
