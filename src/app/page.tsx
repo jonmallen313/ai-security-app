@@ -22,7 +22,7 @@ export default function Home() {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isActivityFeedOpen, setIsActivityFeedOpen] = useState(false);
+  const [isActivityFeedOpen, setIsActivityFeedOpen] = useState<boolean>(false);
   const [chatDialogPosition, setChatDialogPosition] = useState({ top: 0, left: 0 });
   const [activityFeedPosition, setActivityFeedPosition] = useState({ top: 0, left: 0 });
   const [isChatExpanded, setIsChatExpanded] = useState<boolean>(true);
@@ -103,14 +103,14 @@ export default function Home() {
         />
         <section className={cn(
             isChatModalOpen || isActivityFeedOpen ? 'absolute' : 'relative',
-            'flex flex-col',
-            isChatModalOpen && isActivityFeedOpen ? 'md:flex-row' : '',
-            'items-end justify-end gap-4'
+            'flex flex-col items-end justify-end gap-4',
+            'bottom-4 right-4',
+            isChatModalOpen && isActivityFeedOpen ? 'md:flex-row' : ''
         )}>
             {isChatModalOpen && selectedIncident && (
                 <div
                     className={cn(
-                        `fixed bottom-4 right-4 z-50 transition-all duration-300 bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col`,
+                        `fixed bottom-4 right-[13rem] z-40 transition-all duration-300 bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col`,
                         isChatExpanded ? 'w-96 h-96' : 'w-32 h-12',
                         'ml-4', // Add right margin when both are at the bottom
                     )}
@@ -143,7 +143,7 @@ export default function Home() {
 
             <div
                 className={cn(
-                    `fixed bottom-4 right-4 z-40 transition-all duration-300 mr-[12rem]`,
+                    `fixed bottom-4 right-4 z-50 transition-all duration-300`,
                     isActivityFeedOpen ? 'w-96 h-96' : 'w-32 h-12',
                 )}
             >
@@ -185,4 +185,5 @@ export default function Home() {
     </main>
   );
 }
+
 
