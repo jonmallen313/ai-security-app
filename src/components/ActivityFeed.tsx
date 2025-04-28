@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Incident, getIncidents } from '@/services/incidents';
-import { Shield, User, Bot, Pause, Play, AlertTriangle, MessageSquare, ShieldAlert, Move } from 'lucide-react';
+import { Shield, User, Bot, Pause, Play, AlertTriangle, MessageSquare, ShieldAlert, Move, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -221,7 +221,11 @@ const ActivityFeed: React.FC = () => {
         handle={<div ref={drag} className="cursor-move"><Move className='h-4 w-4'/></div>}
         minConstraints={[200, 150]}
         maxConstraints={[800, 600]}
-        onResizeStop={(e, data) => setWidth(data.size.width)}
+        onResizeStop={(e, data) => {
+            setWidth(data.size.width);
+            setHeight(data.size.height)
+        }}
+        resizeHandles={['se']} // Only allow resizing from the bottom-right corner
       >
           <div className="bg-secondary rounded-md border shadow-md">
           <div className="handle bg-accent p-2 cursor-move flex items-center justify-between"
@@ -229,10 +233,10 @@ const ActivityFeed: React.FC = () => {
                   <h3 className="text-lg font-semibold flex items-center gap-2">Live Activity Feed </h3>
             <div className='flex gap-2 items-center'>
               <Button variant="outline" size="icon" onClick={handleMinimize}>
-                {isCollapsed ? <Play className="h-4 w-4"/> : <Pause className="h-4 w-4"/>}
+                {isCollapsed ? <Play className="h-4 w-4"/> : <Minus className="h-4 w-4"/>}
               </Button>
               <Button variant="outline" size="icon" onClick={toggleOpen}>
-                {isExpanded ? <Shield className="h-4 w-4"/> : <MessageSquare className="h-4 w-4"/>}
+                {isExpanded ? <ChevronUp className="h-4 w-4"/> : <ChevronDown className="h-4 w-4"/>}
               </Button>
             </div>
           </div>
