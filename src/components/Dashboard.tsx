@@ -40,6 +40,7 @@ interface Incident {
   sourceIp: string;
   threatLevel: string;
   description: string;
+  id: string;
 }
 
 interface Widget {
@@ -209,23 +210,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOp
              <CardContent>
              <div className={`p-4 rounded-lg shadow-md text-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
              <p className="text-3xl font-bold">{incidents.length}</p>
-             <Button variant="outline" size="icon" onClick={() => onAskAgentforce({
-                time: '',
-                sourceIP: '',
-                category: '',
-                severity: '',
-                mitreTactic: '',
-                location: {
-                  country: '',
-                  lat: 0,
-                  lon: 0
-                },
-                timestamp: '',
-                description: '',
-                threatLevel: ''
-              })}>
-                <Bot className="h-4 w-4" />
-              </Button>
              </div>
              </CardContent>
             </Card>
@@ -513,3 +497,4 @@ const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOp
 };
 
 export default Dashboard;
+
