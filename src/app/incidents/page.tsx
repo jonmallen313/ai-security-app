@@ -104,14 +104,6 @@ const IncidentsPage = () => {
     return null;
   };
 
-  const incidentMatches = incidents.map(incident => {
-    const mitreMatch = matchIncidentToMitre(incident);
-    return {
-      ...incident,
-      mitreTactic: mitreMatch ? mitreMatch.tactic : 'N/A',
-      mitreTechnique: mitreMatch ? mitreMatch.technique : 'N/A',
-    };
-  });
   const handleAskAgentforce = async (incident: Incident) => {
     if (!incident) return;
     setSelectedIncident(incident);
@@ -143,7 +135,7 @@ const IncidentsPage = () => {
 
 
   return (
-    
+    <>
     
     
         
@@ -244,7 +236,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-      ) : null}
+       ) : null}
 
         <section>
           <Table>
@@ -260,23 +252,27 @@ const IncidentsPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {incidentMatches.map((incident, index) => (
+          {incidents.map((incident, index) => {
+            const mitreMatch = matchIncidentToMitre(incident);
+            const mitreTactic = mitreMatch ? mitreMatch.tactic : 'N/A';
+            const mitreTechnique = mitreMatch ? mitreMatch.technique : 'N/A';
+            return (
             <TableRow key={index}>
               <TableCell className="font-medium">{incident.time}</TableCell>
               <TableCell>{incident.sourceIp}</TableCell>
              <TableCell>{incident.threatLevel}</TableCell>
               <TableCell>{incident.description}</TableCell>
-              <TableCell>{incident.mitreTactic}</TableCell>
-              <TableCell>{incident.mitreTechnique}</TableCell>
+              <TableCell>{mitreTactic}</TableCell>
+              <TableCell>{mitreTechnique}</TableCell>
             </TableRow>
-          ))}
+          )})}
         </TableBody>
       </Table>
         </section>
                     
          {selectedIncident !== null && (
-          <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
-            <DialogContent>
+          
+            
               {selectedIncident && (
                  <ChatDialog
                   messages={messages}
@@ -288,9 +284,10 @@ const IncidentsPage = () => {
                 />   
 
               )}
-            </DialogContent>
-          </Dialog>
+            
+          
         )}
+        </>
   );
 };
 
