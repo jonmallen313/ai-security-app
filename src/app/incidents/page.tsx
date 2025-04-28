@@ -23,7 +23,7 @@ const IncidentsPage = () => {
   const [analystComments, setAnalystComments] = useState<{[key: string]: string}>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident|null>(null);
-    const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     const loadIncidents = async () => {
@@ -166,7 +166,7 @@ const IncidentsPage = () => {
                                 <DialogContent>
                                     <ChatModal
                                         incident={incident}
-                                        initialMessages={messages}
+                                        initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${incident.time}, Source IP: ${incident.sourceIp}, Description: ${incident.description}. Suggested mitigations and analysis will appear below.`}]}
                                         setMessages={setMessages}
                                         />
                                 </DialogContent>
