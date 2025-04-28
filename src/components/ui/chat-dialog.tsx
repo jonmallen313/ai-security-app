@@ -23,17 +23,21 @@ interface ChatModalProps {
 const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, initialMessages, setMessages, trigger }) => {
     const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+	const [messages, setLocalMessages] = useState<Message[]>([...initialMessages]);
+
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [messages]);
-  const [messages, setLocalMessages] = useState<Message[]>([...initialMessages]);
+
 
   useEffect(() => {
     setMessages([...messages]);
   }, [messages])
+
+
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(event.target.value);
@@ -47,8 +51,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, init
       setNewMessage('');
       try {
         const analysisResult = await analyzeSecurityIncident({
-          messages: [{role: 'user', content: currentMessage},...messages],
-          ...incident
+          time: incident.time,
+          sourceIp: incident.sourceIp,
+          threatLevel: incident.threatLevel,
+          description: incident.description + '\\nUser Question: ' + currentMessage
         });
         setLocalMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: analysisResult.analysis }]);
       } catch (error) {
