@@ -22,7 +22,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/c
 import {ScrollArea} from '@/components/ui/scroll-area';
 import 'react-resizable/css/styles.css';
 import {cn} from '@/lib/utils';
-import TabDock from './ui/tab-dock';
 
 // Type definition for activity types
 type ActivityType = 'new_incident' | 'triage' | 'agent_response' | 'correlation';
@@ -154,68 +153,63 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({events}) => {
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   }
-    const activityFeedContent = (
-        <div className="flex flex-col h-full">
-            <Select onValueChange={value => setFilter(value as ActivitySource | 'all')}>
-                <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Sources"/>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">All Sources</SelectItem>
-                    <SelectItem value="System">System</SelectItem>
-                    <SelectItem value="Analyst">Analyst</SelectItem>
-                    <SelectItem value="Agentforce">Agentforce</SelectItem>
-                </SelectContent>
-            </Select>
-            <ScrollArea ref={scrollRef} className="h-[calc(100%-100px)] p-2">
-                {filteredFeed.map(item => (
-                    <div key={item.id} className="mb-2 border-b pb-2">
-                        <div className="flex gap-2 items-center">
-                            {getIconForType(item.type)}
-                            <span className="text-xs text-white">{new Date(item.timestamp).toLocaleTimeString()}</span> -{' '}
-                            <span className="text-sm">{item.source}</span>
-                        </div>
-                        <p className="text-sm">{item.message}</p>
-                        {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
-                            <p className="text-xs text-white">Correlated Incidents: {item.correlatedIncidents.join(', ')}</p>
-                        )}
-                    </div>
-                ))}
-            </ScrollArea>
-        </div>
-    );
-
-    const activityFeedTab = {
-        id: 'activity-feed',
-        title: 'Activity Feed',
-        isActive: true,
-        content: activityFeedContent,
-        minimize: toggleOpenState
-    }
 
   return (
-      <TabDock tabs={[activityFeedTab]}>
-      <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col">
-        <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
-          <h3 className="text-lg font-semibold flex items-center gap-2">
-            Live Activity Feed
-          </h3>
-          <div className="flex gap-2 items-center">
-            <Button variant="ghost" size="icon" onClick={toggleOpenState}>
-              {isOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+    <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col">
+      <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
+        <h3 className="text-lg font-semibold flex items-center gap-2">
+          Live Activity Feed
+        </h3>
+        <div className="flex gap-2 items-center">
+          <Button variant="ghost" size="icon" onClick={toggleOpenState}>
+            {isOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+          </Button>
+          {isOpen && (
+            <Button variant="ghost" size="icon" onClick={() => {
+              setIsOpen(false);
+            }}>
+              <X className="h-4 w-4"/>
             </Button>
-            {isOpen && (
-              <Button variant="ghost" size="icon" onClick={() => {
-                setIsOpen(false);
-              }}>
-                <X className="h-4 w-4"/>
-              </Button>
-            )}
+          )}
+        </div>
+      </div>
+      {isOpen && (
+        <div className="flex flex-col h-full">
+          <Select onValueChange={value => setFilter(value as ActivitySource | 'all')}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Sources"/>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sources</SelectItem>
+              <SelectItem value="System">System</SelectItem>
+              <SelectItem value="Analyst">Analyst</SelectItem>
+              <SelectItem value="Agentforce">Agentforce</SelectItem>
+            </SelectContent>
+          </Select>
+          <ScrollArea ref={scrollRef} className="h-[calc(100%-100px)] p-2">
+            {filteredFeed.map(item => (
+              <div key={item.id} className="mb-2 border-b pb-2">
+                <div className="flex gap-2 items-center">
+                  {getIconForType(item.type)}
+                  <span className="text-xs text-white">{new Date(item.timestamp).toLocaleTimeString()}</span> -{' '}
+                  <span className="text-sm">{item.source}</span>
+                </div>
+                <p className="text-sm">{item.message}</p>
+                {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
+                  <p className="text-xs text-white">Correlated Incidents: {item.correlatedIncidents.join(', ')}</p>
+                )}
+              </div>
+            ))}
+          </ScrollArea>
+          <div className="flex p-2 justify-between">
+            <Button variant="secondary" size="sm" onClick={toggleRunning}>
+              {isRendering ? <Pause className="h-4 w-4 mr-2"/> : <Play className="h-4 w-4 mr-2"/>}
+              {isRendering ? 'Pause' : 'Resume'}
+            </Button>
           </div>
         </div>
-          {isOpen && activityFeedContent}
-      </div>
-      </TabDock>
+      )}
+    </div>
   );
 };
 
