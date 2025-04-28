@@ -1,4 +1,5 @@
 
+
 import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
@@ -14,6 +15,9 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
+import ActivityFeed from '@/components/ActivityFeed';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -70,8 +74,10 @@ export default function RootLayout({
           </div>
           <Toaster/>
         </SidebarProvider>
+        <DndProvider backend={HTML5Backend}>
+          <ActivityFeed />
+        </DndProvider>
       </body>
     </html>
   );
 }
-

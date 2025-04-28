@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {getIncidents, Incident} from '@/services/incidents';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/card';
 import {Checkbox} from '@/components/ui/checkbox';
@@ -119,9 +119,11 @@ const IncidentsPage = () => {
   });
 
   return (
-        <div>    
-    <div className="flex flex-col gap-4">
-
+    
+    
+    
+        
+            
       <section>
         <h2 className="text-xl font-semibold mb-4">Recent Security Incidents</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -193,7 +195,7 @@ const IncidentsPage = () => {
                       <TooltipTrigger asChild>
                           <Dialog open={selectedIncident?.time === incident.time && selectedIncident?.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
                                 <DialogTrigger asChild>
-                                        <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
+                                        <Button variant="outline" size="icon">
                                             <Bot className="h-4 w-4"/>
                                         </Button>
                                 </DialogTrigger>
@@ -220,7 +222,7 @@ const IncidentsPage = () => {
         </div>
       </section>
 
-      {selectedIncidents.length > 0 && (
+      {selectedIncidents.length > 0 ? (
         <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
@@ -229,7 +231,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-      )}
+      ) : null}
       <section>
           <Table>
         <TableCaption>A list of security incidents and their MITRE ATT&CK techniques.</TableCaption>
@@ -257,13 +259,9 @@ const IncidentsPage = () => {
         </TableBody>
       </Table>
         </section>
-              <DndProvider backend={HTML5Backend}>
-      <section className="h-96">
-        <ActivityFeed/>
-      </section>
-      </DndProvider>
-    </div>
-    </div>
+              
+    
+    
   );
 };
 
