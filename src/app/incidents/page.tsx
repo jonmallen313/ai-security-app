@@ -10,7 +10,6 @@ import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';
 import {toast} from '@/hooks/use-toast';
 import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
 import {Message} from '@/components/ui/chat-dialog';
-import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 import ChatModal from '@/components/ui/chat-dialog';
 import {Dialog, DialogTrigger, DialogContent} from "@/components/ui/dialog"
 import mitreMapData from '@/data/mitre-map.json';
@@ -208,7 +207,7 @@ const IncidentsPage = () => {
         </div>
       </section>
 
-      {selectedIncidents.length > 0 && (
+      {selectedIncidents.length > 0 ? (
         <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
@@ -217,7 +216,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-      )}
+      ) : null}
 
         <section>
           <Table>
@@ -246,22 +245,22 @@ const IncidentsPage = () => {
         </TableBody>
       </Table>
         </section>
-                    <Dialog open={selectedIncident && isModalOpen} onOpenChange={setIsModalOpen}>
-                            <DialogContent>
-                                    {selectedIncident && (
-                                        <ChatModal
-                                            isOpen={isModalOpen}
-                                            setIsOpen={setIsModalOpen}
-                                            incident={selectedIncident}
-                                            initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${selectedIncident.time}, Source IP: ${selectedIncident.sourceIp}, Description: ${selectedIncident.description}. Suggested mitigations and analysis will appear below.`}]}
-                                            setMessages={setMessages}
-                                            trigger={<Button variant="outline" size="icon"><Bot className="h-4 w-4"/></Button>}
-                                        />
-                                    )}
-                            </DialogContent>
-                    </Dialog>
+                    
     
-    
+                            {selectedIncident && (
+                                    <Dialog open={selectedIncident?.time === incident.time && selectedIncident.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
+                                            <DialogContent>
+                                                    <ChatModal
+                                                        isOpen={isModalOpen}
+                                                        setIsOpen={setIsModalOpen}
+                                                        incident={selectedIncident}
+                                                        initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${selectedIncident.time}, Source IP: ${selectedIncident.sourceIp}, Description: ${selectedIncident.description}. Suggested mitigations and analysis will appear below.`}]}
+                                                        setMessages={setMessages}
+                                                        trigger={<Button variant="outline" size="icon"><Bot className="h-4 w-4"/></Button>}
+                                                    />
+                                            </DialogContent>
+                                    </Dialog>
+                            )}
   );
 };
 
