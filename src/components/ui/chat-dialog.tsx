@@ -15,7 +15,6 @@ export interface Message {
 
 interface ChatDialogProps {
   incident: any;
-  initialMessages: Message[];
   onSendMessage: (message: string) => Promise<void>;
   isLoading: boolean;
   onClose: () => void;
