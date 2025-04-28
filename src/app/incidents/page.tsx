@@ -10,7 +10,6 @@ import {Tooltip, TooltipTrigger, TooltipContent} from "@radix-ui/react-tooltip";
 import {toast} from '@/hooks/use-toast';
 import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
 import {Message, ChatDialog} from '@/components/ui/chat-dialog';
-import { fetchAgentResponse } from '@/services/agent';
 import {
   Table,
   TableHeader,
@@ -20,6 +19,7 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table"
+import ActivityFeedOverlay from '@/components/ActivityFeed';
 
 
 const IncidentsPage = () => {
@@ -263,6 +263,7 @@ const IncidentsPage = () => {
             
           
         )}
+                <ActivityFeedOverlay events={[]}/>
         </>
   );
 };
