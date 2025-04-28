@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
-interface Message {
+export interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
@@ -23,19 +23,19 @@ interface ChatModalProps {
 const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, initialMessages, setMessages, trigger }) => {
     const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-	const [messages, setLocalMessages] = useState<Message[]>([...initialMessages]);
+	const [localMessages, setLocalMessages] = useState<Message[]>([...initialMessages]);
 
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(scrollToBottom, [localMessages]);
 
 
   useEffect(() => {
-    setMessages([...messages]);
-  }, [messages])
+    setMessages([...localMessages]);
+  }, [localMessages, setMessages])
 
 
 
@@ -82,7 +82,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, init
             <ScrollArea className="h-[300px] mb-4 overflow-y-scroll">
                 <div className="space-y-2">
                     <div
-                        className={`p-3 rounded-lg max-w-[75%] bg-gray-200 mr-auto`}
+                        className={`p-3 rounded-lg max-w-[75%] bg-gray-800 text-white mr-auto`}
                     >
                         <div className="text-sm font-medium">
                             Incident Details:
@@ -91,10 +91,10 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, init
                         <p>Source IP: {incident.sourceIp}</p>
                         <p>Description: {incident.description}</p>
                     </div>
-                    {messages.map((message, index) => (
+                    {localMessages.map((message, index) => (
                         <div
                             key={index}
-                            className={`p-3 rounded-lg max-w-[75%] ${message.role === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-gray-200 mr-auto'
+                            className={`p-3 rounded-lg max-w-[75%] ${message.role === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-gray-800 text-white mr-auto'
                                 }`}
                         >
                             <div className="text-sm font-medium">

@@ -84,10 +84,6 @@ const IncidentsPage = () => {
   return (
         <div>    
     <div className="flex flex-col gap-4">
-      <section>
-        <h2 className="text-xl font-semibold mb-4">MITRE ATT&amp;CK Heatmap</h2>
-        <MITREHeatmap/>
-      </section>
 
       <section>
         <h2 className="text-xl font-semibold mb-4">Recent Security Incidents</h2>
@@ -199,6 +195,11 @@ const IncidentsPage = () => {
       )}
       <section className="h-96">
         <ActivityFeed/>
+      </section>
+
+      <section>
+        <h2 className="text-xl font-semibold mb-4">MITRE ATT&amp;CK Heatmap</h2>
+        <MITREHeatmap/>
       </section>
     </div>
     </div>
