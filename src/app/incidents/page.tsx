@@ -75,10 +75,6 @@ const IncidentsPage = () => {
     toast({title: `Exported ${selectedIncidents.length} incidents`});
   };
 
-  const handleAskAgentforce = async (incident: Incident) => {
-    setSelectedIncident(incident)
-    setIsModalOpen(true);
-  };
 
   const handleMarkAsResolved = () => {
     // Mock Resolve functionality
@@ -114,6 +110,11 @@ const IncidentsPage = () => {
       mitreTechnique: mitreMatch ? mitreMatch.technique : 'N/A',
     };
   });
+
+    const handleAskAgentforce = async (incident: Incident) => {
+        setSelectedIncident(incident);
+        setIsModalOpen(true);
+    };
 
   return (
     
@@ -190,23 +191,11 @@ const IncidentsPage = () => {
                   </Tooltip>
                   <Tooltip>
                       <TooltipTrigger asChild>
-                          <Dialog open={selectedIncident?.time === incident.time && selectedIncident?.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
-                                <DialogTrigger asChild>
-                                        <Button variant="outline" size="icon">
-                                            <Bot className="h-4 w-4"/>
-                                        </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <ChatModal
-                                        isOpen={isModalOpen}
-                                        setIsOpen={setIsModalOpen}
-                                        incident={incident}
-                                        initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${incident.time}, Source IP: ${incident.sourceIp}, Description: ${incident.description}. Suggested mitigations and analysis will appear below.`}]}
-                                        setMessages={setMessages}
-                                        trigger={<Button variant="outline" size="icon"><Bot className="h-4 w-4"/></Button>}
-                                        />
-                                </DialogContent>
-                            </Dialog>
+                            <DialogTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                        <Bot className="h-4 w-4"/>
+                                    </Button>
+                            </DialogTrigger>
                       </TooltipTrigger>
                     <TooltipContent>
                       <p>Ask Agentforce</p>
@@ -219,7 +208,7 @@ const IncidentsPage = () => {
         </div>
       </section>
 
-      {selectedIncidents.length > 0 ? (
+      {selectedIncidents.length > 0 && (
         <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
@@ -228,7 +217,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-      ) : null}
+      )}
 
         <section>
           <Table>
@@ -257,7 +246,20 @@ const IncidentsPage = () => {
         </TableBody>
       </Table>
         </section>
-              
+                    <Dialog open={selectedIncident && isModalOpen} onOpenChange={setIsModalOpen}>
+                            <DialogContent>
+                                    {selectedIncident && (
+                                        <ChatModal
+                                            isOpen={isModalOpen}
+                                            setIsOpen={setIsModalOpen}
+                                            incident={selectedIncident}
+                                            initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${selectedIncident.time}, Source IP: ${selectedIncident.sourceIp}, Description: ${selectedIncident.description}. Suggested mitigations and analysis will appear below.`}]}
+                                            setMessages={setMessages}
+                                            trigger={<Button variant="outline" size="icon"><Bot className="h-4 w-4"/></Button>}
+                                        />
+                                    )}
+                            </DialogContent>
+                    </Dialog>
     
     
   );
