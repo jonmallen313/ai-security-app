@@ -21,6 +21,7 @@ import {Button} from '@/components/ui/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {ScrollArea} from '@/components/ui/scroll-area';
 import 'react-resizable/css/styles.css';
+import {cn} from '@/lib/utils';
 
 // Type definition for activity types
 type ActivityType = 'new_incident' | 'triage' | 'agent_response' | 'correlation';
@@ -150,9 +151,10 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${
-        isOpen ? 'w-96 h-96' : 'w-32 h-12'
-      }`}
+      className={cn(
+        `fixed bottom-4 right-4 z-40 transition-all duration-300 `,
+        isOpen ? 'w-96 h-96' : 'w-32 h-12',
+      )}
     >
       <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col">
         <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
