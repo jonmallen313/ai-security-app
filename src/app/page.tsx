@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Dashboard from "@/components/Dashboard";
 import { useTheme } from "@/hooks/use-theme";
 import ChatDialog, { Message } from "@/components/ui/chat-dialog";
@@ -25,7 +25,7 @@ export default function Home() {
   const [isActivityFeedOpen, setIsActivityFeedOpen] = useState<boolean>(false);
   const [chatDialogPosition, setChatDialogPosition] = useState({ top: 0, left: 0 });
   const [activityFeedPosition, setActivityFeedPosition] = useState({ top: 0, left: 0 });
-  const [isChatExpanded, setIsChatExpanded] = useState<boolean>(true);
+  const [isChatExpanded, setIsChatExpanded] = useState<boolean>(false);
   const [isActivityExpanded, setIsActivityExpanded] = useState<boolean>(true);
 
   const handleAskAgentforce = async (incident: Incident) => {
@@ -38,6 +38,7 @@ export default function Home() {
         content: `Analyzing incident: Time: ${incident.time}, Source IP: ${incident.sourceIp}, Description: ${incident.description}. Suggested mitigations and analysis will appear below.`,
       },
     ]);
+    setIsChatExpanded(true);
   };
 
   const handleSendMessage = async (message: string): Promise<void> => {
@@ -80,6 +81,7 @@ export default function Home() {
   const handleCloseModal = () => {
     setIsChatModalOpen(false);
     setSelectedIncident(null);
+    setIsChatExpanded(false); // Reset the isChatExpanded state when closing the modal
   };
 
   const toggleChatOpenState = () => {
@@ -149,4 +151,3 @@ export default function Home() {
     </main>
   );
 }
-
