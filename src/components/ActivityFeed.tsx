@@ -212,7 +212,7 @@ const ActivityFeed: React.FC = () => {
 
   return (
       
-      <div ref={drop} style={{position: "fixed", top: position.y, left: position.x, zIndex: 1000}} >
+      <div ref={drop} style={{top: position.y, left: position.x, zIndex: 1000}} >
       <ResizableBox 
         className={`z-1000`}
         style={{ position: 'relative', zIndex: 1000, top: 0, left: 0}}
