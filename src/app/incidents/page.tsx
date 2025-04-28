@@ -24,8 +24,6 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table"
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 
 type MitreMap = {
   [tactic: string]: {
@@ -232,7 +230,8 @@ const IncidentsPage = () => {
           </div>
         </div>
       ) : null}
-      <section>
+
+        <section>
           <Table>
         <TableCaption>A list of security incidents and their MITRE ATT&CK techniques.</TableCaption>
         <TableHeader>
