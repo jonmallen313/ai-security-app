@@ -1,47 +1,18 @@
 'use client';
 
-import React, {useState, useEffect} from 'react';
-import {select} from 'd3';
+import React, {useState, useEffect, useCallback} from 'react';
+import mitreMapData from '@/data/mitre-map.json';
 import {Incident, getIncidents} from '@/services/incidents';
 
-const tactics = [
-  'Initial Access',
-  'Execution',
-  'Persistence',
-  'Privilege Escalation',
-  'Defense Evasion',
-  'Credential Access',
-  'Discovery',
-  'Lateral Movement',
-  'Collection',
-  'Exfiltration',
-  'Impact',
-];
-
-const techniques = [
-  'Phishing',
-  'PowerShell',
-  'Sudo Caching',
-  'Scheduled Task',
-  'Drive-by Compromise',
-  'Command and Scripting Interpreter',
-  'Registry Run Keys / Startup Folder',
-  'Valid Accounts',
-  'Obfuscated Files or Information',
-  'Brute Force',
-  'Credential Dumping',
-  'System Information Discovery',
-  'Network Service Scanning',
-  'Remote Services',
-  'Clipboard Data',
-  'Application Layer Protocol',
-  'Exfiltration Over Web Service',
-  'Data Destruction',
-];
+type MitreMap = {
+  [tactic: string]: {
+    [technique: string]: string[];
+  };
+};
 
 const MitreMatrix = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [matrixData, setMatrixData] = useState<number[][]>([]);
+  const mitreMap: MitreMap = mitreMapData as MitreMap;
 
   useEffect(() => {
     const loadIncidents = async () => {
@@ -51,63 +22,77 @@ const MitreMatrix = () => {
     loadIncidents();
   }, []);
 
-  useEffect(() => {
-    // Map incidents to MITRE Matrix (adjust according to your incident structure)
-    const updatedMatrix: number[][] = tactics.map(tactic => {
-      return techniques.map(technique => {
-        return incidents.filter(incident => {
-          const descriptionLower = incident.description.toLowerCase();
-          return (
-            descriptionLower.includes(tactic.toLowerCase()) &&
-            descriptionLower.includes(technique.toLowerCase())
-          );
-        }).length;
+  const tactics: string[] = Object.keys(mitreMap);
+  const techniques: string[] = tactics.flatMap(tactic => Object.keys(mitreMap[tactic]));
+
+  const matchIncidents = useCallback(
+    (incidents: Incident[], mitreMap: MitreMap): { [technique: string]: Incident[] } => {
+      const techniqueIncidentMap: { [technique: string]: Incident[] } = {};
+
+      incidents.forEach(incident => {
+        Object.entries(mitreMap).forEach(([tactic, techniques]) => {
+          Object.entries(techniques).forEach(([technique, keywords]) => {
+            keywords.forEach(keyword => {
+              if (incident.description.toLowerCase().includes(keyword.toLowerCase())) {
+                if (!techniqueIncidentMap[technique]) {
+                  techniqueIncidentMap[technique] = [];
+                }
+                if (!techniqueIncidentMap[technique].includes(incident)) {
+                  techniqueIncidentMap[technique].push(incident);
+                }
+              }
+            });
+          });
+        });
       });
-    });
-    setMatrixData(updatedMatrix);
-  }, [incidents]);
+
+      return techniqueIncidentMap;
+    },
+    []
+  );
+
+  const incidentMatches = matchIncidents(incidents, mitreMap);
+
+  const [hoveredCell, setHoveredCell] = useState<string | null>(null);
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">MITRE ATT&amp;CK Matrix</h1>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200">
-          <thead>
-            <tr>
-              <th></th>
-              {techniques.map((technique, j) => (
-                <th key={j} className="text-left py-2 px-4 border-b">
-                  {technique}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {tactics.map((tactic, i) => (
-              <tr key={i}>
-                <td className="text-left py-2 px-4 border-r font-bold">{tactic}</td>
-                {matrixData[i]?.map((cell, j) => (
-                  <td
-                    key={`${i}-${j}`}
-                    className={`py-2 px-4 border-r text-center ${cell > 0 ? 'bg-red-200' : 'bg-gray-100'}`}
-                    onClick={() => {
-                      const filteredIncidents = incidents.filter(incident => {
-                        const descriptionLower = incident.description.toLowerCase();
-                        return (
-                          descriptionLower.includes(tactics[i].toLowerCase()) &&
-                          descriptionLower.includes(techniques[j].toLowerCase())
-                        );
-                      });
-                      console.log(`Incidents clicked: ${tactics[i]} - ${techniques[j]}`, filteredIncidents);
-                    }}
-                  >
-                    {cell > 0 && cell}
-                  </td>
-                ))}
-              </tr>
+    <div className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+        <div className="hidden md:block"></div>
+        {tactics.map((tactic, index) => (
+          <div key={index} className="text-center font-bold p-2">
+            {tactic}
+          </div>
+        ))}
+        {techniques.map((technique, index) => (
+          <React.Fragment key={index}>
+            <div className="font-medium p-2 border rounded">{technique}</div>
+            {tactics.map((tactic, tacticIndex) => (
+              <div
+                key={`${index}-${tacticIndex}`}
+                className={`relative p-2 border rounded text-center ${
+                  incidentMatches[technique] ? 'bg-red-200' : ''
+                }`}
+                onMouseEnter={() => setHoveredCell(technique)}
+                onMouseLeave={() => setHoveredCell(null)}
+              >
+                {incidentMatches[technique] ? incidentMatches[technique].length : 0}
+                {hoveredCell === technique && incidentMatches[technique] && (
+                  <div className="absolute top-full left-0 bg-white border shadow-md p-2 z-10 w-64">
+                    <h4 className="font-bold">Incidents:</h4>
+                    <ul>
+                      {incidentMatches[technique].map((incident, i) => (
+                        <li key={i} className="text-sm">
+                          {incident.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             ))}
-          </tbody>
-        </table>
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );

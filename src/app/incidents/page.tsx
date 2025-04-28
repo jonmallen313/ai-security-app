@@ -2,7 +2,6 @@
 
 import React, {useState, useEffect} from 'react';
 import {getIncidents, Incident} from '@/services/incidents';
-import MITREHeatmap from '@/components/MITREHeatmap';
 import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/components/ui/card';
 import {Checkbox} from '@/components/ui/checkbox';
 import {Textarea} from '@/components/ui/textarea';
@@ -195,11 +194,6 @@ const IncidentsPage = () => {
       )}
       <section className="h-96">
         <ActivityFeed/>
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-4">MITRE ATT&amp;CK Heatmap</h2>
-        <MITREHeatmap/>
       </section>
     </div>
     </div>
