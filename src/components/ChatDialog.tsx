@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -6,34 +6,37 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { useTabDock } from "./ui/tab-dock"
+} from "@/components/ui/dialog";
+import { useTabDock } from "../hooks/useTabDock";
+import { useEffect } from "react";
 
 interface ChatDialogProps {
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
-export const ChatDialog: React.FC<ChatDialogProps> = ({
-  children,
-}) => {
+export const ChatDialog: React.FC<ChatDialogProps> = ({ children }) => {
   const {
     registerWindow,
-    unregisterWindow,
     toggleWindow,
     isWindowActive,
-  } = useTabDock()
+  } = useTabDock();
 
-  const windowId = "chat"
+  const windowId = "chat";
 
-  registerWindow({ id: windowId, title: "Chat" })
+  useEffect(() => {
+    registerWindow({ id: windowId, title: "Chat" });
+  }, []);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    toggleWindow(windowId);
+  };
+
   return (
     <>
       {children}
       <Dialog
-        open={isWindowActive(windowId)}
-        onOpenChange={(isOpen) => {
-          isOpen ? toggleWindow(windowId) : toggleWindow(windowId)
-        }}
+        open={isWindowActive(windowId)}        
+        onOpenChange={handleOpenChange}
       >
         <DialogContent className="sm:max-w-[425px] fixed bottom-16 right-4 border-none bg-popover text-popover-foreground">
         <DialogHeader>
