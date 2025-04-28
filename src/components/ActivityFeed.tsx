@@ -232,12 +232,21 @@ const ActivityFeed: React.FC = () => {
 >
                   <h3 className="text-lg font-semibold flex items-center gap-2">Live Activity Feed </h3>
             <div className='flex gap-2 items-center'>
-              <Button variant="outline" size="icon" onClick={handleMinimize}>
-                {isCollapsed ? <Play className="h-4 w-4"/> : <Minus className="h-4 w-4"/>}
-              </Button>
-              <Button variant="outline" size="icon" onClick={toggleOpen}>
-                {isExpanded ? <ChevronUp className="h-4 w-4"/> : <ChevronDown className="h-4 w-4"/>}
-              </Button>
+                
+              {isCollapsed ? (
+                <Button variant="outline" size="icon" onClick={handleMinimize}>
+                    <ChevronUp className="h-4 w-4"/>
+                </Button>
+              ) : (
+                <>
+                    <Button variant='ghost' size='icon' onClick={toggleRunning}>
+                        {isRendering ? <Pause className='h-4 w-4'/> : <Play className='h-4 w-4'/>}
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={handleMinimize}>
+                        <Minus className="h-4 w-4"/>
+                    </Button>
+                </>
+              )}
             </div>
           </div>
           {isExpanded && !isCollapsed && (
@@ -253,11 +262,6 @@ const ActivityFeed: React.FC = () => {
                   <SelectItem value="Agentforce">Agentforce</SelectItem>
                 </SelectContent>
               </Select>
-                  <Button variant='ghost' size='icon' onClick={toggleRunning}>
-                      {isRendering ? <Pause className='h-4 w-4'/> : <Play className='h-4 w-4'/>}
-                      
-
-              </Button>
               <ScrollArea ref={scrollRef} className="h-[calc(100%-100px)] p-2">
                 {filteredFeed.map(item => (
                   <div key={item.id} className="mb-2 border-b pb-2">
