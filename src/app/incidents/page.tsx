@@ -14,7 +14,22 @@ import ActivityFeed from '@/components/ActivityFeed';
 import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 import ChatModal from '@/components/ui/chat-dialog';
 import {Dialog, DialogTrigger, DialogContent} from "@/components/ui/dialog"
+import mitreMapData from '@/data/mitre-map.json';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table"
 
+type MitreMap = {
+  [tactic: string]: {
+    [technique: string]: string[];
+  };
+};
 
 const IncidentsPage = () => {
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -23,6 +38,8 @@ const IncidentsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident|null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const mitreMap: MitreMap = mitreMapData as MitreMap;
+
 
   useEffect(() => {
     const loadIncidents = async () => {
@@ -79,6 +96,27 @@ const IncidentsPage = () => {
       title: `Escalated ${selectedIncidents.length} incidents to Tier 2`,
     });
   };
+
+  const matchIncidentToMitre = (incident: Incident): { tactic: string; technique: string } | null => {
+    for (const tactic in mitreMap) {
+      for (const technique in mitreMap[tactic]) {
+        const keywords = mitreMap[tactic][technique];
+        if (keywords.some(keyword => incident.description.toLowerCase().includes(keyword.toLowerCase()))) {
+          return { tactic, technique };
+        }
+      }
+    }
+    return null;
+  };
+
+  const incidentMatches = incidents.map(incident => {
+    const mitreMatch = matchIncidentToMitre(incident);
+    return {
+      ...incident,
+      mitreTactic: mitreMatch ? mitreMatch.tactic : 'N/A',
+      mitreTechnique: mitreMatch ? mitreMatch.technique : 'N/A',
+    };
+  });
 
   return (
         <div>    
@@ -192,6 +230,33 @@ const IncidentsPage = () => {
           </div>
         </div>
       )}
+      <section>
+          <Table>
+        <TableCaption>A list of security incidents and their MITRE ATT&CK techniques.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Time</TableHead>
+            <TableHead>Source IP</TableHead>
+            <TableHead>Threat Level</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>MITRE Tactic</TableHead>
+            <TableHead>MITRE Technique</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {incidentMatches.map((incident, index) => (
+            <TableRow key={index}>
+              <TableCell className="font-medium">{incident.time}</TableCell>
+              <TableCell>{incident.sourceIp}</TableCell>
+              <TableCell>{incident.threatLevel}</TableCell>
+              <TableCell>{incident.description}</TableCell>
+              <TableCell>{incident.mitreTactic}</TableCell>
+              <TableCell>{incident.mitreTechnique}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+        </section>
       <section className="h-96">
         <ActivityFeed/>
       </section>

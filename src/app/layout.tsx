@@ -53,11 +53,6 @@ export default function RootLayout({
                       <SidebarMenuButton>Incidents</SidebarMenuButton>
                     </Link>
                   </SidebarMenuItem>
-                                    <SidebarMenuItem>
-                    <Link href="/mitre">
-                      <SidebarMenuButton>Mitre | Att&amp;ck Matrix</SidebarMenuButton>
-                    </Link>
-                  </SidebarMenuItem>
                 </SidebarMenu>
                 <SidebarSeparator/>
               </SidebarContent>
