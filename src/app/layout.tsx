@@ -1,6 +1,5 @@
+'use client';
 
-
-import type {Metadata} from 'next';
 import {Geist, Geist_Mono} from 'next/font/google';
 import './globals.css';
 import {Toaster} from "@/components/ui/toaster";
@@ -15,9 +14,14 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
-import ActivityFeed from '@/components/ActivityFeed';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import ActivityFeedOverlay from '@/components/ActivityFeed';
+import { useEffect, useState } from 'react';
+import { Incident, getIncidents } from '@/services/incidents';
+import {ActivityItem} from '@/components/ActivityFeed';
+import { metadata } from './metadata';
+import type { Metadata } from 'next';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,16 +33,24 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
-export const metadata: Metadata = {
-  title: 'SecureView Dashboard',
-  description: 'A security incident dashboard.',
-};
+export interface RootLayoutProps {
+  children: React.ReactNode;
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: RootLayoutProps) {
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+
+  useEffect(() => {
+    const loadIncidents = async () => {
+      const fetchedIncidents = await getIncidents();
+      setIncidents(fetchedIncidents);
+    };
+
+    loadIncidents();
+  }, []);
+  
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -75,7 +87,7 @@ export default function RootLayout({
           <Toaster/>
         </SidebarProvider>
         <DndProvider backend={HTML5Backend}>
-          <ActivityFeed />
+          <ActivityFeedOverlay events={[]} />
         </DndProvider>
       </body>
     </html>
