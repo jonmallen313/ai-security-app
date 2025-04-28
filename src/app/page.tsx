@@ -147,7 +147,26 @@ export default function Home() {
                             setIsChatExpanded={setIsChatExpanded}
                         />)}
                 </div>)}
+                        <ActivityFeedOverlay
+                            events={[
+                                {
+                                    id: '1',
+                                    type: 'new_incident',
+                                    timestamp: new Date().toISOString(),
+                                    source: 'System',
+                                    message: 'High severity incident detected: SSH brute force from 203.0.113.5'
+                                },
+                                {
+                                    id: '2',
+                                    type: 'agent_response',
+                                    timestamp: new Date().toISOString(),
+                                    source: 'Agentforce',
+                                    message: 'Recommended firewall block: 203.0.113.0/24'
+                                },
+                            ]}
+                        />
         </section>
     </main>
   );
 }
+
