@@ -10,8 +10,6 @@ import {Tooltip, TooltipTrigger, TooltipContent} from "@radix-ui/react-tooltip";
 import {toast} from '@/hooks/use-toast';
 import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
 import {Message, ChatDialog} from '@/components/ui/chat-dialog';
-import {Dialog, DialogContent} from "@/components/ui/dialog"
-import mitreMapData from '@/data/mitre-map.json';
 import { fetchAgentResponse } from '@/services/agent';
 import {
   Table,
@@ -23,11 +21,6 @@ import {
   TableCaption,
 } from "@/components/ui/table"
 
-  type MitreMap = {
-  [tactic: string]: {
-    [technique: string]: string[];
-  };
-};
 
 const IncidentsPage = () => {
   
@@ -38,7 +31,6 @@ const IncidentsPage = () => {
   const [selectedIncident, setSelectedIncident] = useState<Incident|null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const mitreMap = mitreMapData as MitreMap;
 
 
   useEffect(() => {
@@ -91,18 +83,6 @@ const IncidentsPage = () => {
     });
   };
 
-
-  const matchIncidentToMitre = (incident: Incident): { tactic: string; technique: string } | null => {
-    for (const tactic in mitreMap) {
-      for (const technique in mitreMap[tactic]) {
-        const keywords = mitreMap[tactic][technique];
-        if (keywords.some((keyword) => incident.description.toLowerCase().includes(keyword.toLowerCase()))) {
-          return { tactic, technique };
-        }
-      }
-    }
-    return null;
-  };
 
   const handleAskAgentforce = async (incident: Incident) => {
     if (!incident) return;
@@ -227,7 +207,7 @@ const IncidentsPage = () => {
         </div>
       </section>
 
-      {selectedIncidents.length > 0 ? (
+      {selectedIncidents.length > 0 && (
         <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
@@ -236,7 +216,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-       ) : null}
+       )}
 
         <section>
           <Table>
@@ -252,27 +232,23 @@ const IncidentsPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {incidents.map((incident, index) => {
-            const mitreMatch = matchIncidentToMitre(incident);
-            const mitreTactic = mitreMatch ? mitreMatch.tactic : 'N/A';
-            const mitreTechnique = mitreMatch ? mitreMatch.technique : 'N/A';
-            return (
+          {incidents.map((incident, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium">{incident.time}</TableCell>
               <TableCell>{incident.sourceIp}</TableCell>
              <TableCell>{incident.threatLevel}</TableCell>
               <TableCell>{incident.description}</TableCell>
-              <TableCell>{mitreTactic}</TableCell>
-              <TableCell>{mitreTechnique}</TableCell>
+              <TableCell>N/A</TableCell>
+              <TableCell>N/A</TableCell>
             </TableRow>
-          )})}
+          ))}
         </TableBody>
       </Table>
         </section>
                     
          {selectedIncident !== null && (
           
-            
+          
               {selectedIncident && (
                  <ChatDialog
                   messages={messages}
