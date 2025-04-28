@@ -19,6 +19,7 @@ import {
 import { useTheme } from '@/hooks/use-theme'; 
 import WidgetSettingsModal from './WidgetSettingsModal';
 import { nanoid } from 'nanoid';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 interface Incident {
   timestamp: string; 
@@ -184,14 +185,28 @@ const Dashboard: React.FC = () => {
     switch (widget.type) {
       case 'TotalIncidents':
         return (
-          <div className={`p-4 rounded-lg shadow-md text-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Total Incidents</h3>
-            <p className="text-3xl font-bold">{incidents.length}</p>
-          </div>
+          <Card className="shadow-md">
+             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                 Total Incidents
+                </CardTitle>
+             </CardHeader>
+             <CardContent>
+             <div className={`p-4 rounded-lg shadow-md text-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
+             <p className="text-3xl font-bold">{incidents.length}</p>
+             </div>
+             </CardContent>
+            </Card>
         );
       case 'IncidentTrends':
-        return (<div className={`p-4 rounded-lg shadow-md bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
-            <h3 className="text-lg font-semibold">Incident Trends over Time</h3>
+        return (<Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                 Incident Trends over Time
+                </CardTitle>
+             </CardHeader>
+            <CardContent>
+            <div className={`p-4 rounded-lg shadow-md bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={incidentTrendsData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -209,12 +224,20 @@ const Dashboard: React.FC = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          </CardContent>
+          </Card>
         );
       case 'TopSourceIps':
         if (widget.category === 'bar') {
           return (
+            <Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                 Top Source IPs
+                </CardTitle>
+             </CardHeader>
+            <CardContent>
             <div className={`p-4 rounded-lg shadow-md bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Top Source IPs</h3>
                <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={topSourcesData} >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -230,11 +253,19 @@ const Dashboard: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer> 
             </div>
+            </CardContent>
+            </Card>
           );
         } else {
           return (
+            <Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                 Top Source IPs
+                </CardTitle>
+             </CardHeader>
+            <CardContent>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Top Source IPs</h3>
               <ResponsiveContainer width="100%" height={300}>               
                 <PieChart>
                   <Pie
@@ -261,13 +292,21 @@ const Dashboard: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            </CardContent>
+            </Card>
           );
         }
       case 'CommonAttackTypes':
         if (widget.category === 'bar') {
           return (
+             <Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                 Common Attack Types
+                </CardTitle>
+             </CardHeader>
+            <CardContent>
             <div className={`p-4 rounded-lg shadow-md bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
-              <h3 className="text-lg font-semibold">Common Attack Types</h3>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={topCategoriesData}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -283,11 +322,19 @@ const Dashboard: React.FC = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+             </CardContent>
+            </Card>
           );
         } else {
           return (
+            <Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                 Common Attack Types
+                </CardTitle>
+             </CardHeader>
+            <CardContent>
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Common Attack Types</h3>
               <ResponsiveContainer width="100%" height={300}>             
                 <PieChart>
                   <Pie
@@ -314,6 +361,8 @@ const Dashboard: React.FC = () => {
                 </PieChart>
               </ResponsiveContainer>
             </div>
+            </CardContent>
+            </Card>
           );
         }
 
@@ -337,12 +386,14 @@ const Dashboard: React.FC = () => {
         {widgets.map((widget) => (
           <div key={widget.id} className="relative">
             <div className="absolute top-2 right-2 z-10 flex space-x-2">
-              <button
+              {widget.type !== 'TotalIncidents' && (
+               <button
                 className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
                 onClick={() => handleWidgetSettings(widget.id)}
                 >
                 ⚙️
-              </button>
+                </button>
+              )}
               <button
                 className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
                 onClick={() => removeWidget(widget.id)}
