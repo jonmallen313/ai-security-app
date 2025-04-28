@@ -20,7 +20,7 @@ interface ChatModalProps {
 
 }
 
-const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, incident, initialMessages, setMessages }) => {
+const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, initialMessages, setMessages, trigger }) => {
     const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -66,11 +66,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, incident, initia
   };  
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-            {trigger}
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[475px]">
+            <>
             <DialogHeader>
                 <DialogTitle>Chat with Agentforce</DialogTitle>
                 <DialogDescription>
@@ -115,8 +111,7 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, onClose, incident, initia
                 />
                 <Button onClick={handleSendMessage}>Send</Button>
             </div>
-        </DialogContent>
-    </Dialog>
+            </>
   );
 };
 

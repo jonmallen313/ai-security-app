@@ -64,6 +64,7 @@ const IncidentsPage = () => {
 
   const handleAskAgentforce = async (incident: Incident) => {
     setSelectedIncident(incident)
+	setIsModalOpen(true);
   };
 
   const handleMarkAsResolved = () => {
@@ -157,17 +158,20 @@ const IncidentsPage = () => {
                   </Tooltip>
                   <Tooltip>
                       <TooltipTrigger asChild>
-                          <Dialog open={selectedIncident?.time === incident.time && selectedIncident.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
+                          <Dialog open={selectedIncident?.time === incident.time && selectedIncident?.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
                                 <DialogTrigger asChild>
-                                        <Button variant="outline" size="icon">
+                                        <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
                                             <Bot className="h-4 w-4"/>
                                         </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <ChatModal
+                                        isOpen={isModalOpen}
+                                        setIsOpen={setIsModalOpen}
                                         incident={incident}
                                         initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${incident.time}, Source IP: ${incident.sourceIp}, Description: ${incident.description}. Suggested mitigations and analysis will appear below.`}]}
                                         setMessages={setMessages}
+                                        trigger={<Button variant="outline" size="icon"><Bot className="h-4 w-4"/></Button>}
                                         />
                                 </DialogContent>
                             </Dialog>
