@@ -7,7 +7,7 @@ import ChatDialog, { Message } from "@/components/ui/chat-dialog";
 import ActivityFeedOverlay from '@/components/ActivityFeed';
 import { Incident } from "@/services/incidents";
 import { cn } from "@/lib/utils";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { analyzeSecurityIncident, AnalyzeSecurityIncidentOutput } from '@/ai/flows/analyze-security-incident';
 
@@ -141,11 +141,12 @@ export default function Home() {
                             onSendMessage={handleSendMessage}
                             onClose={handleCloseModal}
                             setMessages={setMessages}
+                            isChatExpanded={isChatExpanded}
+                            setIsChatExpanded={setIsChatExpanded}
                         />)}
                 </div>)}
         </section>
     </main>
   );
 }
-
 

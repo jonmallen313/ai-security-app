@@ -5,7 +5,7 @@ import {Button} from '@/components/ui/button';
 import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 import {Input} from '@/components/ui/input';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {X} from 'lucide-react';
+import {X, Minus, ChevronDown} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 export interface Message {
@@ -20,6 +20,8 @@ interface ChatDialogProps {
   onClose: () => void;
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+  isChatExpanded: boolean;
+  setIsChatExpanded: (isChatExpanded: boolean) => void;
 }
 
 const ChatDialog: React.FC<ChatDialogProps> = ({
@@ -29,11 +31,12 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
   onClose,
   messages,
   setMessages,
+  isChatExpanded,
+  setIsChatExpanded,
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [localMessages, setLocalMessages] = useState<Message[]>([...messages]);
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
   useEffect(() => {
     setLocalMessages([...messages]);
@@ -69,13 +72,13 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
     }
   };
 
-  const toggleOpen = () => setIsExpanded(!isExpanded);
+  const toggleOpen = () => setIsChatExpanded(!isChatExpanded);
 
   return (
     <div
       className={cn(
         `fixed bottom-4 right-4 z-50 transition-all duration-300 bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col`,
-        isExpanded ? 'w-96 h-96' : 'w-32 h-12',
+        isChatExpanded ? 'w-96 h-96' : 'w-32 h-12',
         'ml-4', // Add right margin when both are at the bottom
       )}
     >
@@ -93,7 +96,7 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
         </div>
       </div>
 
-      {isExpanded && (
+      {isChatExpanded && (
         <div className="flex flex-col h-full">
           <ScrollArea className="h-[calc(100% - 70px)] p-4">
             <div className="space-y-2">

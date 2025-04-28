@@ -21,8 +21,9 @@ import WidgetSettingsModal from './WidgetSettingsModal';
 import { nanoid } from 'nanoid';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
-import { Bot, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, ChevronDown, ChevronUp, Minus } from 'lucide-react';
 import ActivityFeedOverlay from "@/components/ActivityFeed";
+import {cn} from "@/lib/utils";
 
 interface Incident {
   timestamp: string; 
@@ -35,6 +36,10 @@ interface Incident {
     lat: number;
     lon: number;
   };
+  time: string;
+  sourceIp: string;
+  threatLevel: string;
+  description: string;
 }
 
 interface Widget {
@@ -215,7 +220,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOp
                   lat: 0,
                   lon: 0
                 },
-                timestamp: ''
+                timestamp: '',
+                description: '',
+                threatLevel: ''
               })}>
                 <Bot className="h-4 w-4" />
               </Button>
