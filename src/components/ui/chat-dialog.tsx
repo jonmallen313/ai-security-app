@@ -24,21 +24,24 @@ interface ChatDialogProps {
 const ChatDialog: React.FC<ChatDialogProps> = ({ incident, onSendMessage, isLoading, onClose, messages, setMessages }) => {
     const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [localMessages, setLocalMessages] = useState<Message[]>([...messages]);
+    const [localMessages, setLocalMessages] = useState<Message[]>([...messages]);
 
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
-  useEffect(scrollToBottom, [localMessages]);
+    useEffect(() => {
+        scrollToBottom();
+    }, [localMessages]);
 
 
-  useEffect(() => {
-    setMessages([...localMessages]);
-  }, [localMessages, setMessages])
+    useEffect(() => {
+        setMessages([...localMessages]);
+    }, [localMessages, setMessages])
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(event.target.value);
   };
 
@@ -59,7 +62,8 @@ const ChatDialog: React.FC<ChatDialogProps> = ({ incident, onSendMessage, isLoad
   };  
 
   return (
-      <Draggable handle=".handle">
+      
+        <Draggable handle=".handle">
         <div className="relative w-96 h-96 bg-gray-900 text-white rounded-md shadow-lg z-50" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <div className="handle cursor-move bg-gray-800 p-3 rounded-t-md">
                 Agentforce Chat
