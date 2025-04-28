@@ -16,11 +16,8 @@ import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import ActivityFeedOverlay from '@/components/ActivityFeed';
 import { useEffect, useState } from 'react';
 import { Incident, getIncidents } from '@/services/incidents';
-import {ActivityItem} from '@/components/ActivityFeed';
-import { metadata } from './metadata';
 import type { Metadata } from 'next';
 
 const geistSans = Geist({
@@ -87,9 +84,9 @@ export default function RootLayout({
           <Toaster/>
         </SidebarProvider>
         <DndProvider backend={HTML5Backend}>
-          <ActivityFeedOverlay events={[]} />
         </DndProvider>
       </body>
     </html>
   );
 }
+
