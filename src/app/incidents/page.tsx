@@ -220,7 +220,7 @@ const IncidentsPage = () => {
         </div>
       </section>
 
-      {selectedIncidents.length > 0 ? (
+      {selectedIncidents.length > 0 && (
         <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
           <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
           <div className="flex flex-wrap gap-4">
@@ -229,7 +229,7 @@ const IncidentsPage = () => {
             <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
           </div>
         </div>
-      ) : null}
+      )}
 
         <section>
           <Table>
