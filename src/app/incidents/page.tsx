@@ -243,38 +243,35 @@ const IncidentsPage = () => {
           </div>
         </div>
       )}
-
-      <section>
-        <Table>
-          <TableCaption>A list of security incidents and their MITRE ATT&amp;CK techniques.</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">Time</TableHead>
-              <TableHead>Source IP</TableHead>
-              <TableHead>Threat Level</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>MITRE Tactic</TableHead>
-              <TableHead>MITRE Technique</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {incidents.map((incident) => (
-              <TableRow key={incident.id}>
-                <TableCell className="font-medium">{incident.time}</TableCell>
-                <TableCell>{incident.sourceIp}</TableCell>
-                <TableCell>{incident.threatLevel}</TableCell>
-                <TableCell>{incident.description}</TableCell>
-                <TableCell className={incident.mitreTactic === 'N/A' ? 'text-muted-foreground' : ''}>
-                  {incident.mitreTactic}
-                </TableCell>
-                <TableCell className={incident.mitreTechnique === 'N/A' ? 'text-muted-foreground' : ''}>
-                  {incident.mitreTechnique}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        </section>
+                  <Table>
+                      <TableCaption>A list of security incidents and their MITRE ATT&amp;CK techniques.</TableCaption>
+                      <TableHeader>
+                          <TableRow>
+                              <TableHead className="w-[100px]">Time</TableHead>
+                              <TableHead>Source IP</TableHead>
+                              <TableHead>Threat Level</TableHead>
+                              <TableHead>Description</TableHead>
+                              <TableHead>MITRE Tactic</TableHead>
+                              <TableHead>MITRE Technique</TableHead>
+                          </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                          {incidents.map((incident) => (
+                              <TableRow key={incident.id}>
+                                  <TableCell className="font-medium">{incident.time}</TableCell>
+                                  <TableCell>{incident.sourceIp}</TableCell>
+                                  <TableCell>{incident.threatLevel}</TableCell>
+                                  <TableCell>{incident.description}</TableCell>
+                                  <TableCell className={incident.mitreTactic === 'N/A' ? 'text-muted-foreground' : ''}>
+                                      {incident.mitreTactic}
+                                  </TableCell>
+                                  <TableCell className={incident.mitreTechnique === 'N/A' ? 'text-muted-foreground' : ''}>
+                                      {incident.mitreTechnique}
+                                  </TableCell>
+                              </TableRow>
+                          ))}
+                      </TableBody>
+                  </Table>
           <section className={cn(
               isChatModalOpen || isActivityFeedOpen ? 'absolute' : 'relative',
               'flex flex-col',

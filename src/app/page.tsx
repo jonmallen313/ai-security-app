@@ -9,6 +9,7 @@ import { Incident } from "@/services/incidents";
 import { cn } from "@/lib/utils";
 import { Bot, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { analyzeSecurityIncident, AnalyzeSecurityIncidentOutput } from '@/ai/flows/analyze-security-incident';
 
 export default function Home() {
   const { setTheme, resolvedTheme } = useTheme();
@@ -45,11 +46,20 @@ export default function Home() {
     setMessages((prev) => [...prev, { role: "user", content: message }]);
 
     try {
-      // Assuming there's a function called 'analyzeSecurityIncident' to process the incident
-      // and get the analysis from the AI agent.
-      // Replace this with your actual AI analysis implementation.
-      //const analysisResult = await analyzeSecurityIncident(selectedIncident, message);
-      const response: any = { analysis: 'analysisResult'}; // Replace 'analysisResult' with the actual analysis.
+      if (!selectedIncident) {
+        console.error("No incident selected.");
+        return;
+      }
+
+      const analysisResult: AnalyzeSecurityIncidentOutput = await analyzeSecurityIncident({
+        time: selectedIncident.time,
+        sourceIp: selectedIncident.sourceIp,
+        threatLevel: selectedIncident.threatLevel,
+        description: selectedIncident.description,
+        message: message,
+      });
+
+      const response: any = { analysis: analysisResult.analysis }; // Replace 'analysisResult' with the actual analysis.
 
       setMessages((prev) => [...prev, {
         role: "assistant",
@@ -133,7 +143,7 @@ export default function Home() {
 
             <div
                 className={cn(
-                    `fixed bottom-4 right-4 z-40 transition-all duration-300 `,
+                    `fixed bottom-4 right-4 z-40 transition-all duration-300 mr-[12rem]`,
                     isActivityFeedOpen ? 'w-96 h-96' : 'w-32 h-12',
                 )}
             >
@@ -175,3 +185,4 @@ export default function Home() {
     </main>
   );
 }
+
