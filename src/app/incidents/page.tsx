@@ -14,6 +14,7 @@ import {Message} from '@/components/ui/chat-dialog';
 import ActivityFeed from '@/components/ActivityFeed';
 import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 import ChatModal from '@/components/ui/chat-dialog';
+import {Dialog, DialogTrigger, DialogContent} from "@/components/ui/dialog"
 
 
 const IncidentsPage = () => {
