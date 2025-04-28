@@ -20,6 +20,8 @@ import { useTheme } from '@/hooks/use-theme';
 import WidgetSettingsModal from './WidgetSettingsModal';
 import { nanoid } from 'nanoid';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Bot } from 'lucide-react';
 
 interface Incident {
   timestamp: string; 
@@ -77,7 +79,11 @@ const widgetConfigs: WidgetConfig[] = [
 
 ];
 
-const Dashboard: React.FC = () => {
+interface DashboardProps {
+    onAskAgentforce: (incident: Incident) => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce }) => {
   const { resolvedTheme } = useTheme()
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [widgets, setWidgets] = useState<Widget[]>(() => {
@@ -194,6 +200,21 @@ const Dashboard: React.FC = () => {
              <CardContent>
              <div className={`p-4 rounded-lg shadow-md text-center bg-white dark:bg-gray-800 text-gray-800 dark:text-white`}>
              <p className="text-3xl font-bold">{incidents.length}</p>
+             <Button variant="outline" size="icon" onClick={() => onAskAgentforce({
+                time: '',
+                sourceIP: '',
+                category: '',
+                severity: '',
+                mitreTactic: '',
+                location: {
+                  country: '',
+                  lat: 0,
+                  lon: 0
+                },
+                timestamp: ''
+              })}>
+                <Bot className="h-4 w-4" />
+              </Button>
              </div>
              </CardContent>
             </Card>
@@ -370,7 +391,7 @@ const Dashboard: React.FC = () => {
       default:
         return null;
     }
-  }, [incidents, resolvedTheme]);
+  }, [incidents, resolvedTheme, onAskAgentforce]);
 
   return (
     <div className={`${resolvedTheme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 min-h-screen`}>
