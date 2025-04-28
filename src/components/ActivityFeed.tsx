@@ -49,10 +49,9 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
   const [isRendering, setIsRendering] = useState<boolean>(true);
   const [filter, setFilter] = useState<'all' | ActivitySource>('all');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(400);
-  const [height, setHeight] = useState(500);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Use useEffect to listen for changes to the events prop and update the activityFeed.
   useEffect(() => {
@@ -67,11 +66,45 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
     if (!isRendering) return;
 
     const intervalId = setInterval(() => {
-      //This is where generateActivityItem should be but I removed mitreMap so I just left it.
+      const newActivity = generateActivityItem();
+      setActivityFeed(prevFeed => [newActivity, ...prevFeed]);
     }, 3000);
 
     return () => clearInterval(intervalId);
   }, [isRendering]);
+
+  // Generate dummy activity item
+  const generateActivityItem = (): ActivityItem => {
+    const types: ActivityType[] = ['new_incident', 'triage', 'agent_response', 'correlation'];
+    const sources: ActivitySource[] = ['System', 'Analyst', 'Agentforce'];
+
+    const randomType = types[Math.floor(Math.random() * types.length)];
+    const randomSource = sources[Math.floor(Math.random() * sources.length)];
+
+    let message = '';
+    switch (randomType) {
+      case 'new_incident':
+        message = `New ${randomSource} incident detected`;
+        break;
+      case 'triage':
+        message = `Analyst ${randomSource} triaged incident`;
+        break;
+      case 'agent_response':
+        message = `Agentforce ${randomSource} provided a response`;
+        break;
+      case 'correlation':
+        message = `Correlation Engine ${randomSource} correlated incidents`;
+        break;
+    }
+
+    return {
+      id: Date.now().toString(),
+      type: randomType,
+      timestamp: new Date().toISOString(),
+      source: randomSource,
+      message: message,
+    };
+  };
 
   // Scroll to top on new activity
   useEffect(() => {
@@ -111,78 +144,67 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
   // Minimize handler
   const handleMinimize = () => setIsCollapsed(!isCollapsed);
 
+  const toggleOpenState = () => {
+    setIsOpen(!isOpen);
+  }
+
   return (
     <div
-      style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        zIndex: 9999,
-        width: width,
-        height: height,
-      }}
+      className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ${
+        isOpen ? 'w-96 h-96' : 'w-32 h-12'
+      }`}
     >
-        <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90">
-          <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              Live Activity Feed
-            </h3>
-            <div className="flex gap-2 items-center">
-              {isCollapsed ? (
-                <Button variant="outline" size="icon" onClick={handleMinimize}>
-                  <ChevronUp className="h-4 w-4"/>
-                </Button>
-              ) : (
-                <>
-                  <Button variant="ghost" size="icon" onClick={toggleRunning}>
-                    {isRendering ? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>}
-                  </Button>
-                  <Button variant="outline" size="icon" onClick={handleMinimize}>
-                    <Minus className="h-4 w-4"/>
-                  </Button>
-                </>
-              )}
+      <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col">
+        <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            Live Activity Feed
+          </h3>
+          <div className="flex gap-2 items-center">
+            <Button variant="ghost" size="icon" onClick={toggleOpenState}>
+              {isOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
+            </Button>
+            {isOpen && (
               <Button variant="ghost" size="icon" onClick={() => {
-                /* TODO: Implement close functionality */
+                setIsOpen(false);
               }}>
                 <X className="h-4 w-4"/>
               </Button>
-            </div>
+            )}
           </div>
-          {isExpanded && !isCollapsed && (
-            <>
-              <Select onValueChange={value => setFilter(value as ActivitySource | 'all')}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="All Sources"/>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Sources</SelectItem>
-                  <SelectItem value="System">System</SelectItem>
-                  <SelectItem value="Analyst">Analyst</SelectItem>
-                  <SelectItem value="Agentforce">Agentforce</SelectItem>
-                </SelectContent>
-              </Select>
-              <ScrollArea ref={scrollRef} className="h-[calc(100%-100px)] p-2">
-                {filteredFeed.map(item => (
-                  <div key={item.id} className="mb-2 border-b pb-2">
-                    <div className="flex gap-2 items-center">
-                      {getIconForType(item.type)}
-                      <span className="text-xs text-white">{new Date(item.timestamp).toLocaleTimeString()}</span> -{' '}
-                      <span className="text-sm">{item.source}</span>
-                    </div>
-                    <p className="text-sm">{item.message}</p>
-                    {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
-                      <p className="text-xs text-white">Correlated Incidents: {item.correlatedIncidents.join(', ')}</p>
-                    )}
-                  </div>
-                ))}
-              </ScrollArea>
-            </>
-          )}
         </div>
+        {isOpen && (
+          <div className="flex flex-col h-full">
+            <Select onValueChange={value => setFilter(value as ActivitySource | 'all')}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="All Sources"/>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Sources</SelectItem>
+                <SelectItem value="System">System</SelectItem>
+                <SelectItem value="Analyst">Analyst</SelectItem>
+                <SelectItem value="Agentforce">Agentforce</SelectItem>
+              </SelectContent>
+            </Select>
+            <ScrollArea ref={scrollRef} className="h-[calc(100%-100px)] p-2">
+              {filteredFeed.map(item => (
+                <div key={item.id} className="mb-2 border-b pb-2">
+                  <div className="flex gap-2 items-center">
+                    {getIconForType(item.type)}
+                    <span className="text-xs text-white">{new Date(item.timestamp).toLocaleTimeString()}</span> -{' '}
+                    <span className="text-sm">{item.source}</span>
+                  </div>
+                  <p className="text-sm">{item.message}</p>
+                  {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
+                    <p className="text-xs text-white">Correlated Incidents: {item.correlatedIncidents.join(', ')}</p>
+                  )}
+                </div>
+              ))}
+            </ScrollArea>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default ActivityFeedOverlay;
-
