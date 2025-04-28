@@ -8,9 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from "@radix-ui/react-tooltip";
 import { toast } from '@/hooks/use-toast';
-import { Check, AlertTriangle, MessageSquare, Bot } from 'lucide-react';
+import { Check, AlertTriangle, MessageSquare, Bot, ChevronDown, ChevronUp } from 'lucide-react';
 import ChatDialog, { Message } from "@/components/ui/chat-dialog";
-
 import {
   Table,
   TableHeader,
@@ -21,6 +20,7 @@ import {
   TableCaption,
 } from "@/components/ui/table"
 import ActivityFeedOverlay from '@/components/ActivityFeed';
+import { analyzeSecurityIncident, AnalyzeSecurityIncidentOutput } from '@/ai/flows/analyze-security-incident';
 
 interface AgentResponse {
   role: "assistant" | "user"
@@ -36,7 +36,6 @@ const IncidentsPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isActivityFeedOpen, setIsActivityFeedOpen] = useState(false);
-
 
   useEffect(() => {
     const loadIncidents = async () => {
@@ -74,7 +73,6 @@ const IncidentsPage = () => {
     toast({ title: `Exported ${selectedIncidents.length} incidents` });
   };
 
-
   const handleMarkAsResolved = () => {
     // Mock Resolve functionality
     toast({ title: `Marked ${selectedIncidents.length} incidents as Resolved` });
@@ -87,7 +85,6 @@ const IncidentsPage = () => {
       title: `Escalated ${selectedIncidents.length} incidents to Tier 2`,
     });
   };
-
 
   const handleAskAgentforce = async (incident: Incident) => {
     if (!incident) return;
@@ -106,25 +103,44 @@ const IncidentsPage = () => {
     setIsLoading(true);
     setMessages((prev) => [...prev, { role: "user", content: message }]);
 
-    const response = await agentResponse(message, selectedIncident);
-    setMessages((prev) => [...prev, {
-      role: response.role,
-      content: response.content,
-    }]);
+    if (!selectedIncident) {
+      console.error("No incident selected.");
+      return;
+    }
 
-    setIsLoading(false);
+    try {
+      const analysisResult: AnalyzeSecurityIncidentOutput = await analyzeSecurityIncident({
+        time: selectedIncident.time,
+        sourceIp: selectedIncident.sourceIp,
+        threatLevel: selectedIncident.threatLevel,
+        description: selectedIncident.description,
+        message: message,
+      });
+
+      const response: AgentResponse = {
+        role: "assistant",
+        content: analysisResult.analysis,
+      };
+
+      setMessages((prev) => [...prev, {
+        role: response.role,
+        content: response.content,
+      }]);
+
+    } catch (error) {
+      console.error("Error analyzing security incident:", error);
+      setMessages((prev) => [...prev, {
+        role: "assistant",
+        content: "Failed to analyze the incident. Please try again later.",
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
 
   const handleCloseModal = () => {
     setIsChatModalOpen(false);
     setSelectedIncident(null);
-  };
-
-
-  const agentResponse = async (message: string, incident: Incident): Promise<AgentResponse> => {
-
-    return { role: "assistant", content: `Agent response to: ${message} regarding incident: ${incident.id}` };
   };
 
   return (
@@ -205,8 +221,6 @@ const IncidentsPage = () => {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Ask Agentforce</p>
-
-
                     </TooltipContent>
                   </Tooltip>
                 </CardContent>
