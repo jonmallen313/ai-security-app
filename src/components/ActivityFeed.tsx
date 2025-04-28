@@ -213,50 +213,45 @@ const ActivityFeed: React.FC = () => {
               </div>
             </div>
             {isOpen && (
-                <div className="flex items-center justify-between p-2">
-                  <Select value={filter} onValueChange={value => setFilter(value as any)}>
-                    <SelectTrigger className="w-[180px] h-8">
-                      <SelectValue placeholder="Filter by Source"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Sources</SelectItem>
-                      <SelectItem value="System">System</SelectItem>
-                      <SelectItem value="Analyst">Analyst</SelectItem>
-                      <SelectItem value="Agentforce">Agentforce</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline" size="icon" onClick={toggleRunning}>
-                    {isRunning ? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>}
-                  </Button>
-                </div>
-                <ScrollArea className="flex-1 rounded-md border p-2" style={{ maxHeight: '500px' }}>
-                  <div ref={scrollRef} className="overflow-y-auto flex flex-col-reverse">
+                
+                  
+                    All Sources
+                    System
+                    Analyst
+                    Agentforce
+                  
+                  
+                    {isRunning ?  : }
+                  
+                
+                
+                  
                     {filteredFeed.map(item => (
-                      <div key={item.id} className="py-2 border-b last:border-b-0">
-                        <div className="flex items-center space-x-2">
+                      
+                        
                           {getIconForType(item.type)}
-                          <p className="text-sm font-medium">{item.message}</p>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
+                          
+                        
+                        
                           {new Date(item.timestamp).toLocaleTimeString()} - {item.source}
-                        </div>
+                        
                         {item.correlatedIncidents && item.correlatedIncidents.length > 0 && (
-                          <div className="text-xs text-gray-500">
+                          
                             Correlated Incidents: {item.correlatedIncidents.join(', ')}
-                          </div>
+                          
                         )}
-                      </div>
+                      
                     ))}
                     {filteredFeed.length === 0 && (
-                      <div className="py-4 text-center text-muted-foreground">
+                      
                         No activities to display.
-                      </div>
+                      
                     )}
-                  </div>
-                </ScrollArea>
-              </div>
+                  
+                
+              
             )}
-        </div>
+        
         </Resizable>
         </Draggable>
       
