@@ -88,7 +88,7 @@ const ActivityFeed: React.FC = () => {
 
         // Attempt to correlate with existing incidents
         const correlatedIncidents = activityFeed.filter(item => {
-          return item.incident && item.type === 'new_incident' && item.incident !== newIncident && matchIncidentToMitre(item.incident)?.tactic === mitreMatch.tactic;
+          return item.incident && item.type === 'new_incident' && item.incident !== newIncident && matchIncidentToMitre(item.incident)?.technique === mitreMatch.technique;
         }).map(item => item.id);
 
         if (correlatedIncidents.length > 0) {
@@ -98,7 +98,7 @@ const ActivityFeed: React.FC = () => {
             type: 'correlation',
             timestamp: now.toISOString(),
             source: 'System',
-            message: `Incident ${newIncident.description} correlated with existing incidents due to shared MITRE ATT&CK tactic: ${mitreMatch.tactic}`,
+            message: `Incident ${newIncident.description} correlated with existing incidents due to shared MITRE ATT&CK tactic: ${mitreMatch.technique}`,
             incident: newIncident,
             correlatedIncidents: correlatedIncidents,
           };

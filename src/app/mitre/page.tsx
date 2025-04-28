@@ -3,6 +3,15 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import mitreMapData from '@/data/mitre-map.json';
 import {Incident, getIncidents} from '@/services/incidents';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  TableCaption,
+} from "@/components/ui/table"
 
 type MitreMap = {
   [tactic: string]: {
@@ -22,78 +31,54 @@ const MitreMatrix = () => {
     loadIncidents();
   }, []);
 
-  const tactics: string[] = Object.keys(mitreMap);
-  const techniques: string[] = tactics.flatMap(tactic => Object.keys(mitreMap[tactic]));
+  const matchIncidentToMitre = useCallback((incident: Incident): { tactic: string; technique: string } | null => {
+    for (const tactic in mitreMap) {
+      for (const technique in mitreMap[tactic]) {
+        const keywords = mitreMap[tactic][technique];
+        if (keywords.some(keyword => incident.description.toLowerCase().includes(keyword.toLowerCase()))) {
+          return { tactic, technique };
+        }
+      }
+    }
+    return null;
+  }, [mitreMap]);
 
-  const matchIncidents = useCallback(
-    (incidents: Incident[], mitreMap: MitreMap): { [technique: string]: Incident[] } => {
-      const techniqueIncidentMap: { [technique: string]: Incident[] } = {};
-
-      incidents.forEach(incident => {
-        Object.entries(mitreMap).forEach(([tactic, techniques]) => {
-          Object.entries(techniques).forEach(([technique, keywords]) => {
-            keywords.forEach(keyword => {
-              if (incident.description.toLowerCase().includes(keyword.toLowerCase())) {
-                if (!techniqueIncidentMap[technique]) {
-                  techniqueIncidentMap[technique] = [];
-                }
-                if (!techniqueIncidentMap[technique].includes(incident)) {
-                  techniqueIncidentMap[technique].push(incident);
-                }
-              }
-            });
-          });
-        });
-      });
-
-      return techniqueIncidentMap;
-    },
-    []
-  );
-
-  const incidentMatches = matchIncidents(incidents, mitreMap);
-
-  const [hoveredCell, setHoveredCell] = useState<string | null>(null);
+  const incidentMatches = incidents.map(incident => {
+    const mitreMatch = matchIncidentToMitre(incident);
+    return {
+      ...incident,
+      mitreTactic: mitreMatch ? mitreMatch.tactic : 'N/A',
+      mitreTechnique: mitreMatch ? mitreMatch.technique : 'N/A',
+    };
+  });
 
   return (
     <div className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-        <div className="hidden md:block"></div>
-        {tactics.map((tactic, index) => (
-          <div key={index} className="text-center font-bold p-2">
-            {tactic}
-          </div>
-        ))}
-        {techniques.map((technique, index) => (
-          <React.Fragment key={index}>
-            <div className="font-medium p-2 border rounded">{technique}</div>
-            {tactics.map((tactic, tacticIndex) => (
-              <div
-                key={`${index}-${tacticIndex}`}
-                className={`relative p-2 border rounded text-center ${
-                  incidentMatches[technique] ? 'bg-red-200' : ''
-                }`}
-                onMouseEnter={() => setHoveredCell(technique)}
-                onMouseLeave={() => setHoveredCell(null)}
-              >
-                {incidentMatches[technique] ? incidentMatches[technique].length : 0}
-                {hoveredCell === technique && incidentMatches[technique] && (
-                  <div className="absolute top-full left-0 bg-white border shadow-md p-2 z-10 w-64">
-                    <h4 className="font-bold">Incidents:</h4>
-                    <ul>
-                      {incidentMatches[technique].map((incident, i) => (
-                        <li key={i} className="text-sm">
-                          {incident.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </React.Fragment>
-        ))}
-      </div>
+      <Table>
+        <TableCaption>A list of security incidents and their MITRE ATT&CK techniques.</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Time</TableHead>
+            <TableHead>Source IP</TableHead>
+            <TableHead>Threat Level</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>MITRE Tactic</TableHead>
+            <TableHead>MITRE Technique</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {incidentMatches.map((incident, index) => (
+            <TableRow key={index}>
+              <TableCell className="font-medium">{incident.time}</TableCell>
+              <TableCell>{incident.sourceIp}</TableCell>
+              <TableCell>{incident.threatLevel}</TableCell>
+              <TableCell>{incident.description}</TableCell>
+              <TableCell>{incident.mitreTactic}</TableCell>
+              <TableCell>{incident.mitreTechnique}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };
