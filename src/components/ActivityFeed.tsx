@@ -211,7 +211,7 @@ const ActivityFeed: React.FC = () => {
 
 
   return (
-      <DndProvider backend={HTML5Backend}>
+      
       <div ref={drop} style={{position: "fixed", top: position.y, left: position.x, zIndex: 1000}} >
       <ResizableBox 
         className={`z-1000`}
@@ -273,7 +273,7 @@ const ActivityFeed: React.FC = () => {
         </div>
         </ResizableBox>
       </div>
-    </DndProvider>
+    
   );
 };
 

@@ -24,6 +24,8 @@ import {
   TableCell,
   TableCaption,
 } from "@/components/ui/table"
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 type MitreMap = {
   [tactic: string]: {
@@ -255,9 +257,11 @@ const IncidentsPage = () => {
         </TableBody>
       </Table>
         </section>
+              <DndProvider backend={HTML5Backend}>
       <section className="h-96">
         <ActivityFeed/>
       </section>
+      </DndProvider>
     </div>
     </div>
   );
