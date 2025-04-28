@@ -21,7 +21,8 @@ import WidgetSettingsModal from './WidgetSettingsModal';
 import { nanoid } from 'nanoid';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
-import { Bot } from 'lucide-react';
+import { Bot, ChevronDown, ChevronUp } from 'lucide-react';
+import ActivityFeedOverlay from "@/components/ActivityFeed";
 
 interface Incident {
   timestamp: string; 
@@ -81,9 +82,12 @@ const widgetConfigs: WidgetConfig[] = [
 
 interface DashboardProps {
     onAskAgentforce: (incident: Incident) => void;
+    isActivityFeedOpen: boolean;
+    setIsActivityFeedOpen: (isOpen: boolean) => void;
+    activityFeedPosition: { top: number; left: number };
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOpen, setIsActivityFeedOpen, activityFeedPosition }) => {
   const { resolvedTheme } = useTheme()
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [widgets, setWidgets] = useState<Widget[]>(() => {

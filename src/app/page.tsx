@@ -100,6 +100,9 @@ export default function Home() {
       </div>
         <Dashboard
         onAskAgentforce={handleAskAgentforce}
+        isActivityFeedOpen={isActivityFeedOpen}
+        setIsActivityFeedOpen={setIsActivityFeedOpen}
+            activityFeedPosition={activityFeedPosition}
         />
         <section className={cn(
             isChatModalOpen || isActivityFeedOpen ? 'absolute' : 'relative',
@@ -140,49 +143,9 @@ export default function Home() {
                             setMessages={setMessages}
                         />)}
                 </div>)}
-
-            <div
-                className={cn(
-                    `fixed bottom-4 right-4 z-50 transition-all duration-300`,
-                    isActivityFeedOpen ? 'w-96 h-96' : 'w-32 h-12',
-                )}
-            >
-                <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col">
-                    <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
-                        <h3 className="text-lg font-semibold flex items-center gap-2">
-                            Live Activity Feed
-                        </h3>
-                        <div className="flex gap-2 items-center">
-                            <Button variant="ghost" size="icon" onClick={() => setIsActivityFeedOpen(!isActivityFeedOpen)}>
-                                {isActivityFeedOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
-                            </Button>
-                        </div>
-                    </div>
-                    {isActivityFeedOpen && (
-                        <ActivityFeedOverlay
-                            events={[
-                                {
-                                    id: '1',
-                                    type: 'new_incident',
-                                    timestamp: new Date().toISOString(),
-                                    source: 'System',
-                                    message: 'High severity incident detected: SSH brute force from 203.0.113.5'
-                                },
-                                {
-                                    id: '2',
-                                    type: 'agent_response',
-                                    timestamp: new Date().toISOString(),
-                                    source: 'Agentforce',
-                                    message: 'Recommended firewall block: 203.0.113.0/24'
-                                },
-                            ]}
-                        />
-                    )}
-                </div>
-            </div>
-
         </section>
     </main>
   );
 }
+
 
