@@ -35,6 +35,7 @@ const IncidentsPage = () => {
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isActivityFeedOpen, setIsActivityFeedOpen] = useState(false);
 
 
   useEffect(() => {
@@ -256,8 +257,8 @@ const IncidentsPage = () => {
             ))}
           </TableBody>
         </Table>
-
-        <section>
+        </section>
+          <section>
           {selectedIncident && (
             <ChatDialog
               messages={messages}
@@ -265,12 +266,38 @@ const IncidentsPage = () => {
               isLoading={isLoading}
               onSendMessage={handleSendMessage}
               onClose={handleCloseModal}
-              initialMessages={[]}
+              initialMessages={[
+                                {
+                                  role: "assistant",
+                                  content: `Analyzing incident: Time: ${selectedIncident.time}, Source IP: ${selectedIncident.sourceIp}, Description: ${selectedIncident.description}. What would you like to know?`,
+                                },
+                              ]}
               setMessages={setMessages}
             />)}
-          <ActivityFeedOverlay events={[]} />
-        </section>
-      </section>
+              </section>
+              <Button onClick={() => setIsActivityFeedOpen(!isActivityFeedOpen)}>
+                {isActivityFeedOpen ? "Hide Activity Feed" : "Show Activity Feed"}
+              </Button>
+              {isActivityFeedOpen && (
+                  <ActivityFeedOverlay
+                    events={[
+                      {
+                        id: '1',
+                        type: 'new_incident',
+                        timestamp: new Date().toISOString(),
+                        source: 'System',
+                        message: 'High severity incident detected: SSH brute force from 203.0.113.5'
+                      },
+                      {
+                        id: '2',
+                        type: 'agent_response',
+                        timestamp: new Date().toISOString(),
+                        source: 'Agentforce',
+                        message: 'Recommended firewall block: 203.0.113.0/24'
+                      },
+                    ]}
+                  />
+                )}
     </>
   );
 };

@@ -1,4 +1,6 @@
 export interface Incident {
+  mitreTechnique: string;
+  mitreTactic: string;
   id: string;
   time: string;
   sourceIp: string;
