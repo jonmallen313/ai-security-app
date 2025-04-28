@@ -1,29 +1,29 @@
-import React, { useState, useRef, useEffect, Dispatch, SetStateAction } from 'react';
+import React, { useState, useRef, useEffect} from 'react';
 import { Button } from '@/components/ui/button';
 import { analyzeSecurityIncident } from '@/ai/flows/analyze-security-incident';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 export interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-interface ChatModalProps {
-  isOpen: boolean;
-  setIsOpen: Dispatch<SetStateAction<boolean>>;
+interface ChatDialogProps {
   incident: any;
   initialMessages: Message[];
+  onSendMessage: (message: string) => Promise<void>;
+  isLoading: boolean;
+  onClose: () => void;
+  messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-    trigger: React.ReactNode;
 
 }
 
-const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, initialMessages, setMessages, trigger }) => {
+const ChatDialog: React.FC<ChatDialogProps> = ({ incident, onSendMessage, isLoading, onClose, messages, setMessages }) => {
     const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-	const [localMessages, setLocalMessages] = useState<Message[]>([...initialMessages]);
+  const [localMessages, setLocalMessages] = useState<Message[]>([...messages]);
 
 
   const scrollToBottom = () => {
@@ -37,48 +37,29 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, init
     setMessages([...localMessages]);
   }, [localMessages, setMessages])
 
-
-
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(event.target.value);
   };
 
-  const handleSendMessage = async () => {
+  const handleLocalSendMessage = async () => {
     if (newMessage.trim() !== '') {
       setLocalMessages((prevMessages) => [...prevMessages, { role: 'user', content: newMessage }]);
-      
-      const currentMessage = newMessage;
       setNewMessage('');
-      try {
-        const analysisResult = await analyzeSecurityIncident({
-          time: incident.time,
-          sourceIp: incident.sourceIp,
-          threatLevel: incident.threatLevel,
-          description: incident.description + '\\nUser Question: ' + currentMessage
-        });
-        setLocalMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: analysisResult.analysis }]);
-      } catch (error) {
-        console.error('Error analyzing incident:', error);
-      }
+      await onSendMessage(newMessage);
     }
   };
 
   
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      handleSendMessage();
+      handleLocalSendMessage();
       event.preventDefault()
     }
   };  
 
   return (
             <>
-            <DialogHeader>
-                <DialogTitle>Chat with Agentforce</DialogTitle>
-                <DialogDescription>
-                    Ask Agentforce about this incident.
-                </DialogDescription>
-            </DialogHeader>
+
             <ScrollArea className="h-[300px] mb-4 overflow-y-scroll">
                 <div className="space-y-2">
                     <div
@@ -115,10 +96,13 @@ const ChatModal: React.FC<ChatModalProps> = ({ isOpen, setIsOpen, incident, init
                     onKeyDown={handleKeyDown}
                     placeholder="Type your message here..."
                 />
-                <Button onClick={handleSendMessage}>Send</Button>
+                <Button onClick={handleLocalSendMessage}>Send</Button>
             </div>
+            {isLoading && (
+                <div className="text-sm text-gray-500 mt-2">Loading...</div>
+            )}
             </>
   );
 };
 
-export default ChatModal;
+export default ChatDialog;

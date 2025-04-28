@@ -20,7 +20,6 @@ import {
 import {Button} from '@/components/ui/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {ResizableBox} from 'react-resizable';
 import 'react-resizable/css/styles.css';
 
 // Type definition for activity types
@@ -50,7 +49,6 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
   const [isRendering, setIsRendering] = useState<boolean>(true);
   const [filter, setFilter] = useState<'all' | ActivitySource>('all');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({x: 50, y: 50});
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(500);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
@@ -113,39 +111,17 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
   // Minimize handler
   const handleMinimize = () => setIsCollapsed(!isCollapsed);
 
-  const handleDrag = (e: any, data: any) => {
-    setPosition({x: data.x, y: data.y});
-  };
-
   return (
     <div
       style={{
         position: 'fixed',
-        top: position.y,
-        left: position.x,
+        bottom: '20px',
+        right: '20px',
         zIndex: 9999,
         width: width,
         height: height,
       }}
     >
-      <ResizableBox
-        style={{
-          position: 'relative',
-          zIndex: 1000,
-          top: 0,
-          left: 0,
-        }}
-        width={width}
-        height={height}
-        handle={<div className="cursor-move"><Move className="h-4 w-4"/></div>}
-        minConstraints={[300, 200]}
-        maxConstraints={[800, 600]}
-        onResizeStop={(e, data) => {
-          setWidth(data.size.width);
-          setHeight(data.size.height);
-        }}
-        resizeHandles={['se']} // Only allow resizing from the bottom-right corner
-      >
         <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90">
           <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
             <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -204,9 +180,9 @@ const ActivityFeedOverlay: React.FC<ActivityFeedOverlayProps> = ({events}) => {
             </>
           )}
         </div>
-      </ResizableBox>
     </div>
   );
 };
 
 export default ActivityFeedOverlay;
+

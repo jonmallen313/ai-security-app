@@ -6,13 +6,13 @@ import {Card, CardHeader, CardTitle, CardDescription, CardContent} from '@/compo
 import {Checkbox} from '@/components/ui/checkbox';
 import {Textarea} from '@/components/ui/textarea';
 import {Button} from '@/components/ui/button';
-import {Tooltip, TooltipTrigger, TooltipContent} from '@/components/ui/tooltip';
+import {Tooltip, TooltipTrigger, TooltipContent} from "@radix-ui/react-tooltip";
 import {toast} from '@/hooks/use-toast';
 import {Check, AlertTriangle, MessageSquare, Bot} from 'lucide-react';
-import {Message} from '@/components/ui/chat-dialog';
-import ChatModal from '@/components/ui/chat-dialog';
+import {Message, ChatDialog} from '@/components/ui/chat-dialog';
 import {Dialog, DialogTrigger, DialogContent} from "@/components/ui/dialog"
 import mitreMapData from '@/data/mitre-map.json';
+import { fetchAgentResponse } from '@/services/agent';
 import {
   Table,
   TableHeader,
@@ -23,20 +23,22 @@ import {
   TableCaption,
 } from "@/components/ui/table"
 
-type MitreMap = {
+  type MitreMap = {
   [tactic: string]: {
     [technique: string]: string[];
   };
 };
 
 const IncidentsPage = () => {
+  
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
   const [analystComments, setAnalystComments] = useState<{[key: string]: string}>({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident|null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const mitreMap: MitreMap = mitreMapData as MitreMap;
+  const [isLoading, setIsLoading] = useState(false);
+  const mitreMap = mitreMapData as MitreMap;
 
 
   useEffect(() => {
@@ -48,11 +50,12 @@ const IncidentsPage = () => {
   }, []);
 
   const toggleIncidentSelection = (incidentId: string) => {
-    setSelectedIncidents(prev => {
-      if (prev.includes(incidentId)) {
-        return prev.filter(id => id !== incidentId);
-      } else {
-        return [...prev, incidentId];
+    setSelectedIncidents((prevSelectedIncidents) => {
+      const isSelected = prevSelectedIncidents.includes(incidentId);
+      if (isSelected) {
+        return prevSelectedIncidents.filter((id) => id !== incidentId);
+      } else{
+        return [...prevSelectedIncidents, incidentId];
       }
     });
   };
@@ -60,16 +63,16 @@ const IncidentsPage = () => {
   const handleCommentChange = (incidentId: string, comment: string) => {
     setAnalystComments(prev => ({...prev, [incidentId]: comment}));
   };
-
-  const handleTagIncident = (incidentId: string, tag: string) => {
+  
+  const handleTagIncident = (incident: Incident, tag: string) => {
     toast({
-      title: `Incident ${incidentId} tagged as ${tag}`,
+      title: `Incident ${incident.id} tagged as ${tag}`
     });
   };
 
-  const handleExportSelected = () => {
+  const handleExportSelected = () => {   
     // Mock export functionality
-    const selectedData = incidents.filter(incident => selectedIncidents.includes(`${incident.time}-${incident.sourceIp}`));
+    const selectedData = incidents.filter(incident => selectedIncidents.includes(incident.id));
     console.log('Exporting:', selectedData);
     toast({title: `Exported ${selectedIncidents.length} incidents`});
   };
@@ -93,7 +96,7 @@ const IncidentsPage = () => {
     for (const tactic in mitreMap) {
       for (const technique in mitreMap[tactic]) {
         const keywords = mitreMap[tactic][technique];
-        if (keywords.some(keyword => incident.description.toLowerCase().includes(keyword.toLowerCase()))) {
+        if (keywords.some((keyword) => incident.description.toLowerCase().includes(keyword.toLowerCase()))) {
           return { tactic, technique };
         }
       }
@@ -109,11 +112,35 @@ const IncidentsPage = () => {
       mitreTechnique: mitreMatch ? mitreMatch.technique : 'N/A',
     };
   });
+  const handleAskAgentforce = async (incident: Incident) => {
+    if (!incident) return;
+    setSelectedIncident(incident);
+    setIsModalOpen(true);
+    setMessages([
+      {
+        role: "assistant",
+        content: `Analyzing incident: Time: ${incident.time}, Source IP: ${incident.sourceIp}, Description: ${incident.description}. Suggested mitigations and analysis will appear below.`,
+      },
+    ]);
+  };
 
-    const handleAskAgentforce = async (incident: Incident) => {
-        setSelectedIncident(incident);
-        setIsModalOpen(true);
+  const handleSendMessage = async (message: string) => {
+    if (!selectedIncident) return;
+    setIsLoading(true);
+    setMessages((prev) => [...prev, { role: "user", content: message }]);
+    const agentResponse = await fetchAgentResponse(message, selectedIncident);
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: agentResponse },
+    ]);
+    setIsLoading(false);
+  };
+
+    const handleCloseModal = () => {
+      setIsModalOpen(false);
+      setSelectedIncident(null);
     };
+
 
   return (
     
@@ -125,9 +152,10 @@ const IncidentsPage = () => {
         <h2 className="text-xl font-semibold mb-4">Recent Security Incidents</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {incidents.map((incident, index) => {
-            const incidentId = `${incident.time}-${incident.sourceIp}`;
+            
+            const incidentId = incident.id;
             return (
-              <Card key={index} className="shadow-md">
+              <Card key={incident.id} className="shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>
                     <div className="flex items-center">
@@ -137,7 +165,7 @@ const IncidentsPage = () => {
                         onCheckedChange={() => toggleIncidentSelection(incidentId)}
                       />
                       <label
-                        htmlFor={`select-${incidentId}`}
+                        htmlFor={`select-${incident.id}`}
                         className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
                         Threat Level: {incident.threatLevel}
@@ -158,8 +186,8 @@ const IncidentsPage = () => {
                 <CardContent className="flex justify-around">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incidentId, 'False Positive')}>
-                        <Check className="h-4 w-4"/>
+                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'False Positive') }>
+                        <Check className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -169,9 +197,9 @@ const IncidentsPage = () => {
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incidentId, 'Confirmed Threat')}>
-                        <AlertTriangle className="h-4 w-4"/>
-                      </Button>
+                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Confirmed Threat') }>
+                        <AlertTriangle className="h-4 w-4" />
+                      </Button>                
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Confirmed Threat</p>
@@ -180,8 +208,8 @@ const IncidentsPage = () => {
 
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incidentId, 'Needs Review')}>
-                        <MessageSquare className="h-4 w-4"/>
+                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Needs Review') }>
+                        <MessageSquare className="h-4 w-4" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -190,14 +218,14 @@ const IncidentsPage = () => {
                   </Tooltip>
                   <Tooltip>
                       <TooltipTrigger asChild>
-                            <DialogTrigger asChild>
-                                    <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
-                                        <Bot className="h-4 w-4"/>
-                                    </Button>
-                            </DialogTrigger>
+                        <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
+                          <Bot className="h-4 w-4" />
+                        </Button>
                       </TooltipTrigger>
                     <TooltipContent>
                       <p>Ask Agentforce</p>
+                        
+
                     </TooltipContent>
                   </Tooltip>
                 </CardContent>
@@ -236,7 +264,7 @@ const IncidentsPage = () => {
             <TableRow key={index}>
               <TableCell className="font-medium">{incident.time}</TableCell>
               <TableCell>{incident.sourceIp}</TableCell>
-              <TableCell>{incident.threatLevel}</TableCell>
+             <TableCell>{incident.threatLevel}</TableCell>
               <TableCell>{incident.description}</TableCell>
               <TableCell>{incident.mitreTactic}</TableCell>
               <TableCell>{incident.mitreTechnique}</TableCell>
@@ -246,21 +274,23 @@ const IncidentsPage = () => {
       </Table>
         </section>
                     
-    
-                            {selectedIncident && (
-                                    <Dialog open={selectedIncident?.time === incident.time && selectedIncident.sourceIp === incident.sourceIp && isModalOpen} onOpenChange={setIsModalOpen}>
-                                            <DialogContent>
-                                                    <ChatModal
-                                                        isOpen={isModalOpen}
-                                                        setIsOpen={setIsModalOpen}
-                                                        incident={selectedIncident}
-                                                        initialMessages={[{role: 'assistant', content: `Analyzing incident: Time: ${selectedIncident.time}, Source IP: ${selectedIncident.sourceIp}, Description: ${selectedIncident.description}. Suggested mitigations and analysis will appear below.`}]}
-                                                        setMessages={setMessages}
-                                                        trigger={<Button variant="outline" size="icon"><Bot className="h-4 w-4"/></Button>}
-                                                    />
-                                            </DialogContent>
-                                    </Dialog>
-                            )}
+         {selectedIncident !== null && (
+          <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
+            <DialogContent>
+              {selectedIncident && (
+                 <ChatDialog
+                  messages={messages}
+                  setMessages={setMessages}
+                  incident={selectedIncident}
+                  isLoading={isLoading}
+                  onSendMessage={handleSendMessage}
+                  onClose={handleCloseModal}
+                />   
+
+              )}
+            </DialogContent>
+          </Dialog>
+        )}
   );
 };
 
