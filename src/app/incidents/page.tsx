@@ -266,12 +266,6 @@ const IncidentsPage = () => {
               isLoading={isLoading}
               onSendMessage={handleSendMessage}
               onClose={handleCloseModal}
-              initialMessages={[
-                                {
-                                  role: "assistant",
-                                  content: `Analyzing incident: Time: ${selectedIncident.time}, Source IP: ${selectedIncident.sourceIp}, Description: ${selectedIncident.description}. What would you like to know?`,
-                                },
-                              ]}
               setMessages={setMessages}
             />)}
               </section>
