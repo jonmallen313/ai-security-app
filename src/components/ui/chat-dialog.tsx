@@ -5,8 +5,9 @@ import {Button} from '@/components/ui/button';
 import {analyzeSecurityIncident} from '@/ai/flows/analyze-security-incident';
 import {Input} from '@/components/ui/input';
 import {ScrollArea} from '@/components/ui/scroll-area';
-import {X, Minus, ChevronDown} from 'lucide-react';
+import {X, Minus, ChevronDown, ChevronUp, Bot} from 'lucide-react';
 import {cn} from '@/lib/utils';
+import { Incident } from '@/services/incidents';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -14,7 +15,7 @@ export interface Message {
 }
 
 interface ChatDialogProps {
-  incident: any;
+  incident: Incident;
   onSendMessage: (message: string) => Promise<void>;
   isLoading: boolean;
   onClose: () => void;
@@ -36,11 +37,12 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
 }) => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [localMessages, setLocalMessages] = useState<Message[]>([...messages]);
+  const [isMinimized, setIsMinimized] = useState(false);
 
+  // Sync with parent state
   useEffect(() => {
-    setLocalMessages([...messages]);
-  }, [messages]);
+    setIsMinimized(!isChatExpanded);
+  }, [isChatExpanded]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
@@ -48,15 +50,15 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [localMessages]);
+  }, [messages]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(event.target.value);
   };
 
-  const handleLocalSendMessage = async () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim() !== '') {
-      setLocalMessages(prevMessages => [
+      setMessages(prevMessages => [
         ...prevMessages,
         {role: 'user', content: newMessage},
       ]);
@@ -67,36 +69,74 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      handleLocalSendMessage();
+      handleSendMessage();
       event.preventDefault();
     }
   };
 
-  const toggleOpen = () => setIsChatExpanded(!isChatExpanded);
+  const handleMinimize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMinimized(true);
+    setIsChatExpanded(false);
+  };
+
+  const handleMaximize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMinimized(false);
+    setIsChatExpanded(true);
+  };
+
+  const handleToggleMinimize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isMinimized) {
+      handleMaximize(e);
+    } else {
+      handleMinimize(e);
+    }
+  };
 
   return (
     <div
       className={cn(
-        `fixed bottom-4 right-4 z-50 transition-all duration-300 bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col`,
-        isChatExpanded ? 'w-96 h-96' : 'w-32 h-12',
-        'ml-4', // Add right margin when both are at the bottom
+        'fixed bottom-4 right-4 z-50 transition-all duration-300 bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col',
+        isMinimized ? 'w-32 h-12' : 'w-96 h-96'
       )}
     >
       <div
-        className="bg-[#333] p-2 cursor-move flex items-center justify-between"
-        onClick={toggleOpen}
+        className={cn(
+          "bg-[#333] p-2 flex items-center justify-between",
+          isMinimized ? "cursor-pointer" : ""
+        )}
+        onClick={isMinimized ? handleMaximize : undefined}
       >
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          Agentforce Chat
+          <Bot className="h-5 w-5" />
+          <span className={cn(isMinimized ? "hidden" : "inline")}>Agentforce Chat</span>
         </h3>
         <div className="flex gap-2 items-center">
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          {!isMinimized && (
+            <Button 
+              className="hover:bg-gray-700" 
+              onClick={handleMinimize}
+              title="Minimize"
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+          )}
+          <Button 
+            className="hover:bg-gray-700" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            title="Close"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {isChatExpanded && (
+      {!isMinimized && (
         <div className="flex flex-col h-full">
           <ScrollArea className="h-[calc(100% - 70px)] p-4">
             <div className="space-y-2">
@@ -104,14 +144,15 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
               <p>Time: {incident.time}</p>
               <p>Source IP: {incident.sourceIp}</p>
               <p>Description: {incident.description}</p>
-              {localMessages.map((message, index) => (
+              {messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg max-w-[75%] ${
+                  className={cn(
+                    "p-3 rounded-lg max-w-[75%]",
                     message.role === 'user'
                       ? 'bg-blue-500 text-white ml-auto'
                       : 'bg-gray-700 text-white mr-auto'
-                  }`}
+                  )}
                 >
                   <div className="text-sm font-medium">
                     {message.role === 'user' ? 'You' : 'Agentforce'}:
@@ -132,9 +173,10 @@ const ChatDialog: React.FC<ChatDialogProps> = ({
               onKeyDown={handleKeyDown}
               placeholder="Type your message here..."
             />
-            <Button onClick={handleLocalSendMessage}>Send</Button>
+            <Button onClick={handleSendMessage} disabled={isLoading}>
+              {isLoading ? 'Sending...' : 'Send'}
+            </Button>
           </div>
-          {isLoading && <div className="text-sm text-gray-500 mt-2">Loading...</div>}
         </div>
       )}
     </div>

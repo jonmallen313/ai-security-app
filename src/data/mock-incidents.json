@@ -1,0 +1,138 @@
+[
+  {
+    "id": "inc-001",
+    "type": "Suspicious Login Attempt",
+    "severity": "critical",
+    "description": "Multiple failed login attempts detected from IP 192.168.1.45",
+    "sourceIp": "192.168.1.45",
+    "timestamp": "2023-04-28T14:30:00Z",
+    "status": "new",
+    "mitreTechnique": "T1110",
+    "mitreTactic": "Initial Access",
+    "threatLevel": "High",
+    "recommendations": [
+      "Block IP address 192.168.1.45",
+      "Reset passwords for affected accounts",
+      "Enable MFA for all user accounts"
+    ]
+  },
+  {
+    "id": "inc-002",
+    "type": "Malware Detection",
+    "severity": "error",
+    "description": "Potential malware detected on workstation WS-1023",
+    "sourceIp": "10.0.2.15",
+    "timestamp": "2023-04-27T09:15:00Z",
+    "status": "analyzing",
+    "mitreTechnique": "T1059",
+    "mitreTactic": "Execution",
+    "threatLevel": "Medium",
+    "recommendations": [
+      "Isolate affected workstation",
+      "Run full system scan",
+      "Update antivirus definitions"
+    ]
+  },
+  {
+    "id": "inc-003",
+    "type": "Data Exfiltration",
+    "severity": "critical",
+    "description": "Large volume of data being transferred to external server",
+    "sourceIp": "10.0.3.42",
+    "timestamp": "2023-04-26T22:45:00Z",
+    "status": "resolved",
+    "mitreTechnique": "T1041",
+    "mitreTactic": "Exfiltration",
+    "threatLevel": "Critical",
+    "recommendations": [
+      "Block outbound connections to suspicious IP",
+      "Audit file access logs",
+      "Implement data loss prevention controls"
+    ]
+  },
+  {
+    "id": "inc-004",
+    "type": "Unusual Network Activity",
+    "severity": "warning",
+    "description": "Unusual network traffic pattern detected from server SRV-01",
+    "sourceIp": "10.0.1.10",
+    "timestamp": "2023-04-25T16:20:00Z",
+    "status": "analyzing",
+    "mitreTechnique": "T1046",
+    "mitreTactic": "Discovery",
+    "threatLevel": "Low",
+    "recommendations": [
+      "Monitor network traffic",
+      "Check for unauthorized services",
+      "Review server logs"
+    ]
+  },
+  {
+    "id": "inc-005",
+    "type": "Privilege Escalation",
+    "severity": "error",
+    "description": "User account granted administrative privileges without proper authorization",
+    "sourceIp": "10.0.2.30",
+    "timestamp": "2023-04-24T11:05:00Z",
+    "status": "resolved",
+    "mitreTechnique": "T1136",
+    "mitreTactic": "Persistence",
+    "threatLevel": "Medium",
+    "recommendations": [
+      "Revoke administrative privileges",
+      "Audit user account changes",
+      "Implement least privilege principle"
+    ]
+  },
+  {
+    "id": "inc-006",
+    "type": "Ransomware Detection",
+    "severity": "critical",
+    "description": "Files being encrypted on multiple workstations",
+    "sourceIp": "10.0.3.15",
+    "timestamp": "2023-04-23T08:30:00Z",
+    "status": "new",
+    "mitreTechnique": "T1486",
+    "mitreTactic": "Impact",
+    "threatLevel": "Critical",
+    "recommendations": [
+      "Disconnect affected systems from network",
+      "Identify patient zero",
+      "Restore from backups"
+    ]
+  },
+  {
+    "id": "inc-007",
+    "type": "Suspicious File Download",
+    "severity": "warning",
+    "description": "User downloaded executable file from untrusted source",
+    "sourceIp": "10.0.2.45",
+    "timestamp": "2023-04-22T15:40:00Z",
+    "status": "analyzing",
+    "mitreTechnique": "T1105",
+    "mitreTactic": "Lateral Movement",
+    "threatLevel": "Low",
+    "recommendations": [
+      "Scan downloaded file",
+      "Educate user on security policies",
+      "Implement application whitelisting"
+    ]
+  },
+  {
+    "id": "inc-008",
+    "type": "Brute Force Attack",
+    "severity": "error",
+    "description": "Multiple failed login attempts to web application",
+    "sourceIp": "203.0.113.42",
+    "timestamp": "2023-04-21T03:15:00Z",
+    "status": "resolved",
+    "mitreTechnique": "T1110",
+    "mitreTactic": "Initial Access",
+    "threatLevel": "Medium",
+    "recommendations": [
+      "Implement IP-based rate limiting",
+      "Enable CAPTCHA for login attempts",
+      "Consider using a Web Application Firewall"
+    ]
+  }
+] 

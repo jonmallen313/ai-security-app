@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChromePicker } from 'react-color';
 import { useTheme } from '@/hooks/use-theme';
+import { Incident } from '@/services/incidents';
 
 interface Widget {
   id: string;
@@ -20,7 +20,7 @@ interface WidgetSettingsModalProps {
   widget: Widget;
   onClose: () => void;
   onUpdate: (widget: Widget, settingType: string, key: string, color: string) => void;
-  incidents?: any[];
+  incidents?: Incident[];
 }
 
 const WidgetSettingsModal: React.FC<WidgetSettingsModalProps> = ({
@@ -46,10 +46,10 @@ const WidgetSettingsModal: React.FC<WidgetSettingsModalProps> = ({
         const types = new Set<string>();
         const severities = new Set<string>();
 
-        incidents.forEach((incident:any) => {
-          sources.add(incident.sourceIP);
-          types.add(incident.category);
-          severities.add(incident.severity);
+        incidents.forEach((incident: Incident) => {
+          sources.add(incident.sourceIp);
+          types.add(incident.mitreTechnique);
+          severities.add(incident.threatLevel);
         });
 
         setSourceColors((prev) => {

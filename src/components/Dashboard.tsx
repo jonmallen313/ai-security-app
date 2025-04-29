@@ -21,27 +21,10 @@ import WidgetSettingsModal from './WidgetSettingsModal';
 import { nanoid } from 'nanoid';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
-import { Bot, ChevronDown, ChevronUp, Minus } from 'lucide-react';
+import { Bot, ChevronDown, ChevronUp, Minus, Settings, X } from 'lucide-react';
 import ActivityFeedOverlay from "@/components/ActivityFeed";
 import {cn} from "@/lib/utils";
-
-interface Incident {
-  timestamp: string; 
-  sourceIP: string;
-  category: string;
-  severity: string;
-  mitreTactic: string;
-  location: {
-    country: string;
-    lat: number;
-    lon: number;
-  };
-  time: string;
-  sourceIp: string;
-  threatLevel: string;
-  description: string;
-  id: string;
-}
+import { Incident } from '@/services/incidents';
 
 interface Widget {
   id: string;
@@ -83,7 +66,6 @@ const widgetConfigs: WidgetConfig[] = [
     label: 'Common Attack Types',
     visualizations: ['bar', 'pie'],
   },
-
 ];
 
 interface DashboardProps {
@@ -120,6 +102,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOp
       localStorage.setItem('dashboardWidgets', JSON.stringify(widgets));
     }
   }, [widgets]);
+
+  const getWidgetTitle = (type: string): string => {
+    const config = widgetConfigs.find(config => config.type === type);
+    return config ? config.label : type;
+  };
 
   const addWidget = () => {
     if (selectedWidgetType && selectedVisualization) {
@@ -166,38 +153,43 @@ const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOp
   };
 
   const dataByDate = incidents.reduce<Record<string, number>>((acc, incident) => {
-    const timestamp = incident.timestamp;
-    if (typeof timestamp === 'string' && timestamp.includes('T')) {
-      const date = timestamp.split('T')[0];
-      acc[date] = (acc[date] || 0) + 1;
-    }
+    const date = incident.time.split('T')[0];
+    acc[date] = (acc[date] || 0) + 1;
     return acc;
   }, {});  
+
   const incidentTrendsData = Object.entries(dataByDate).map(([date, count]) => ({
     date,
     count,
   }));
+
   const incidentSources = incidents.reduce<Record<string, number>>((acc, incident) => {
-    acc[incident.sourceIP] = (acc[incident.sourceIP] || 0) + 1;
+    acc[incident.sourceIp] = (acc[incident.sourceIp] || 0) + 1;
     return acc;
   }, {});
+
   const topSourcesData = Object.entries(incidentSources)
     .sort(([, countA], [, countB]) => countB - countA)
     .slice(0, 10)
     .map(([source, count]) => ({ source, count }));
+
   const incidentCategories = incidents.reduce<Record<string, number>>((acc, incident) => {
-    acc[incident.category] = (acc[incident.category] || 0) + 1;
+    acc[incident.mitreTechnique] = (acc[incident.mitreTechnique] || 0) + 1;
     return acc;
   }, {});
 
   const topCategoriesData = Object.entries(incidentCategories)
     .sort(([, countA], [, countB]) => countB - countA)
     .map(([category, count]) => ({ category, count }));
+
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF0000', '#00FF00', '#0000FF', '#8884d8', '#82ca9d'];
+  
   const getColor = (widget: Widget, dataKey: string, dataValue: string, index: number) => {
     const colorMap = widget.settings?.[dataKey + 'Colors'];
     return colorMap && colorMap[dataValue] ? colorMap[dataValue] : COLORS[index % COLORS.length];
-  };  const renderWidget = useCallback((widget: Widget) => { 
+  };
+
+  const renderWidget = useCallback((widget: Widget) => { 
     switch (widget.type) {
       case 'TotalIncidents':
         return (
@@ -389,38 +381,109 @@ const Dashboard: React.FC<DashboardProps> = ({ onAskAgentforce, isActivityFeedOp
   }, [incidents, resolvedTheme, onAskAgentforce]);
 
   return (
-    <div className={`${resolvedTheme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"} p-4 min-h-screen`}>
-      <h2 className="text-2xl font-bold mb-4 dark:text-white">Security Dashboard</h2>
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4 dark:bg-blue-700 dark:hover:bg-blue-900"
-        onClick={() => setShowAddWidgetModal(true)}
-      > 
-        + Add Visualization
-      </button>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {widgets.map((widget) => (
-          <div key={widget.id} className="relative">
-            <div className="absolute top-2 right-2 z-10 flex space-x-2">
-              {widget.type !== 'TotalIncidents' && (
-               <button
-                className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
-                onClick={() => handleWidgetSettings(widget.id)}
-                >
-                ⚙️
-                </button>
-              )}
-              <button
-                className="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100"
-                onClick={() => removeWidget(widget.id)}
-              >
-                ❌
-              </button>
-            </div>
-            {renderWidget(widget)}
-          </div>
-        ))}
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => setShowAddWidgetModal(true)}
+          >
+            Add Widget
+          </Button>
+          <Button 
+            className="bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            onClick={() => setIsActivityFeedOpen(!isActivityFeedOpen)}
+          >
+            {isActivityFeedOpen ? "Hide Activity Feed" : "Show Activity Feed"}
+          </Button>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {incidents.length} incidents detected
+        </div>
       </div>
+
+      {/* Dashboard Header with Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <Card className="bg-primary/10 border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-primary">Total Incidents</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{incidents.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">All time</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-destructive/10 border-destructive/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-destructive">Critical Incidents</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{incidents.filter(i => i.threatLevel === 'critical').length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Requires immediate attention</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-warning/10 border-warning/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-warning">High Risk</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{incidents.filter(i => i.threatLevel === 'high').length}</div>
+            <p className="text-xs text-muted-foreground mt-1">Investigation needed</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-success/10 border-success/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-success">MITRE Techniques</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{new Set(incidents.map(i => i.mitreTechnique)).size}</div>
+            <p className="text-xs text-muted-foreground mt-1">Unique attack patterns</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {widgets.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-lg bg-muted/20">
+          <h3 className="text-xl font-medium mb-2">No widgets added yet</h3>
+          <p className="text-muted-foreground mb-4">Add widgets to visualize your security data</p>
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => setShowAddWidgetModal(true)}
+          >
+            Add Your First Widget
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {widgets.map((widget) => (
+            <Card key={widget.id} className="overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-lg font-medium">{getWidgetTitle(widget.type)}</CardTitle>
+                <div className="flex items-center gap-1">
+                  <Button 
+                    className="h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => setWidgetToEdit(widget)}
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    className="h-8 w-8 p-0 hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => removeWidget(widget.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="h-[300px] w-full">
+                  {renderWidget(widget)}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
       {widgetToEdit !== null && (
           <WidgetSettingsModal
             widget={widgetToEdit}

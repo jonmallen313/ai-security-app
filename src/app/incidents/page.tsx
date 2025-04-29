@@ -1,318 +1,216 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { getIncidents, Incident } from '@/services/incidents';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipTrigger, TooltipContent } from "@radix-ui/react-tooltip";
-import { toast } from '@/hooks/use-toast';
-import { Check, AlertTriangle, MessageSquare, Bot, ChevronDown, ChevronUp } from 'lucide-react';
-import ChatDialog, { Message } from "@/components/ui/chat-dialog";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-  TableCaption,
-} from "@/components/ui/table"
-import ActivityFeedOverlay from '@/components/ActivityFeed';
-import { analyzeSecurityIncident, AnalyzeSecurityIncidentOutput } from '@/ai/flows/analyze-security-incident';
-import {cn} from "@/lib/utils";
+import { useState } from 'react';
+import Link from "next/link";
+import { getIncidents } from "@/services/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { IncidentService, Incident } from "@/services/incidents";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/hooks/use-toast";
+import { AIChatDialog } from "@/components/ui/ai-chat-dialog";
+import { Bot } from "lucide-react";
 
-interface AgentResponse {
-  role: "assistant" | "user"
-  content: string;
-}
+// Initialize service
+const incidentService = new IncidentService();
 
-const IncidentsPage = () => {
-  const [incidents, setIncidents] = useState<Incident[]>([]);
-  const [selectedIncidents, setSelectedIncidents] = useState<string[]>([]);
-  const [analystComments, setAnalystComments] = useState<{ [key: string]: string }>({});
-  const [isChatModalOpen, setIsChatModalOpen] = useState<boolean>(false);
+export default function IncidentsPage() {
+  const [incidents, setIncidents] = useState(incidentService.getIncidents());
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isActivityFeedOpen, setIsActivityFeedOpen] = useState(false);
-  const [activityFeedPosition, setActivityFeedPosition] = useState({ top: 0, left: 0 });
-  const [chatDialogPosition, setChatDialogPosition] = useState({ top: 0, left: 0 });
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
+  const [newIncident, setNewIncident] = useState({
+    type: '',
+    severity: 'warning' as 'info' | 'warning' | 'error' | 'critical',
+    description: '',
+    sourceIp: '',
+  });
 
-  useEffect(() => {
-    const loadIncidents = async () => {
-      const data = await getIncidents();
-      setIncidents(data);
-    };
-    loadIncidents();
-  }, []);
-
-  const toggleIncidentSelection = (incidentId: string) => {
-    setSelectedIncidents((prevSelectedIncidents) => {
-      const isSelected = prevSelectedIncidents.includes(incidentId);
-      if (isSelected) {
-        return prevSelectedIncidents.filter((id) => id !== incidentId);
-      } else {
-        return [...prevSelectedIncidents, incidentId];
-      }
-    });
-  };
-
-  const handleCommentChange = (incidentId: string, comment: string) => {
-    setAnalystComments(prev => ({ ...prev, [incidentId]: comment }));
-  };
-
-  const handleTagIncident = (incident: Incident, tag: string) => {
-    toast({
-      title: `Incident ${incident.id} tagged as ${tag}`
-    });
-  };
-
-  const handleExportSelected = () => {
-    // Mock export functionality
-    const selectedData = incidents.filter(incident => selectedIncidents.includes(incident.id));
-    console.log('Exporting:', selectedData);
-    toast({ title: `Exported ${selectedIncidents.length} incidents` });
-  };
-
-  const handleMarkAsResolved = () => {
-    // Mock Resolve functionality
-    toast({ title: `Marked ${selectedIncidents.length} incidents as Resolved` });
-
-  };
-
-  const handleEscalateToTier2 = () => {
-    // Mock Escalate functionality
-    toast({
-      title: `Escalated ${selectedIncidents.length} incidents to Tier 2`,
-    });
-  };
-
-  const handleAskAgentforce = async (incident: Incident) => {
-    if (!incident) return;
-    setSelectedIncident(incident);
-    setIsChatModalOpen(true);
-    setMessages([
-      {
-        role: "assistant",
-        content: `Analyzing incident: Time: ${incident.time}, Source IP: ${incident.sourceIp}, Description: ${incident.description}. Suggested mitigations and analysis will appear below.`,
-      },
-    ]);
-  };
-
-  const handleSendMessage = async (message: string): Promise<void> => {
-    if (!selectedIncident) return;
-    setIsLoading(true);
-    setMessages((prev) => [...prev, { role: "user", content: message }]);
-
-    if (!selectedIncident) {
-      console.error("No incident selected.");
+  const handleCreateIncident = async () => {
+    if (!newIncident.type || !newIncident.description || !newIncident.sourceIp) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
-      const analysisResult: AnalyzeSecurityIncidentOutput = await analyzeSecurityIncident({
-        time: selectedIncident.time,
-        sourceIp: selectedIncident.sourceIp,
-        threatLevel: selectedIncident.threatLevel,
-        description: selectedIncident.description,
-        message: message,
+      const createdIncident = await incidentService.createIncident({
+        ...newIncident,
+        timestamp: new Date().toISOString(),
       });
 
-      const response: AgentResponse = {
-        role: "assistant",
-        content: analysisResult.analysis,
-      };
+      setIncidents([...incidents, createdIncident]);
+      setIsDialogOpen(false);
+      
+      // Reset form
+      setNewIncident({
+        type: '',
+        severity: 'warning' as 'info' | 'warning' | 'error' | 'critical',
+        description: '',
+        sourceIp: '',
+      });
 
-      setMessages((prev) => [...prev, {
-        role: response.role,
-        content: response.content,
-      }]);
-
-    } catch (error: any) {
-      console.error("Error analyzing security incident:", error);
-      setMessages((prev) => [...prev, {
-        role: "assistant",
-        content: `Failed to analyze the incident. Please try again later. ${error.message}`,
-      }]);
-    } finally {
-      setIsLoading(false);
+      toast({
+        title: "Success",
+        description: "Incident created successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create incident",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleCloseModal = () => {
-    setIsChatModalOpen(false);
-    setSelectedIncident(null);
+  const handleAskAgent = (incident: Incident) => {
+    setSelectedIncident(incident);
+    setIsAIChatOpen(true);
   };
 
   return (
-    <>
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Recent Security Incidents</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {incidents.map((incident) => {
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Security Incidents</h1>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>Create New Incident</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Create New Incident</DialogTitle>
+              <DialogDescription>
+                Fill in the details for the new security incident.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="type" className="text-right">
+                  Type
+                </Label>
+                <Input
+                  id="type"
+                  value={newIncident.type}
+                  onChange={(e) => setNewIncident({...newIncident, type: e.target.value})}
+                  className="col-span-3"
+                  placeholder="e.g., Malware Detection"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="severity" className="text-right">
+                  Severity
+                </Label>
+                <Select 
+                  value={newIncident.severity} 
+                  onValueChange={(value) => setNewIncident({...newIncident, severity: value as 'info' | 'warning' | 'error' | 'critical'})}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select severity" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="info">Info</SelectItem>
+                    <SelectItem value="warning">Warning</SelectItem>
+                    <SelectItem value="error">Error</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="sourceIp" className="text-right">
+                  Source IP
+                </Label>
+                <Input
+                  id="sourceIp"
+                  value={newIncident.sourceIp}
+                  onChange={(e) => setNewIncident({...newIncident, sourceIp: e.target.value})}
+                  className="col-span-3"
+                  placeholder="e.g., 192.168.1.100"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={newIncident.description}
+                  onChange={(e) => setNewIncident({...newIncident, description: e.target.value})}
+                  className="col-span-3"
+                  placeholder="Describe the incident..."
+                  rows={4}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleCreateIncident}>Create Incident</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-            const incidentId = incident.id;
-            return (
-              <Card key={incident.id} className="shadow-md">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle>
-                    <div className="flex items-center">
-                      <Checkbox
-                        id={`select-${incidentId}`}
-                        checked={selectedIncidents.includes(incidentId)}
-                        onCheckedChange={() => toggleIncidentSelection(incidentId)}
-                      />
-                      <label
-                        htmlFor={`select-${incident.id}`}
-                        className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        Threat Level: {incident.threatLevel}
-                      </label>
-                    </div>
-                  </CardTitle>
-                  <CardDescription>Time: {incident.time}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p>Source IP: {incident.sourceIp}</p>
-                  <p>Description: {incident.description}</p>
-                  <Textarea
-                    placeholder="Add analyst comments..."
-                    value={analystComments[incidentId] || ''}
-                    onChange={(e) => handleCommentChange(incidentId, e.target.value)}
-                  />
-                </CardContent>
-                <CardContent className="flex justify-around">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'False Positive')}>
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>False Positive</p>
-                    </TooltipContent>
-                  </Tooltip>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {incidents.map((incident) => (
+          <Card key={incident.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="truncate">{incident.type}</span>
+                <Badge
+                  variant={
+                    incident.severity === "critical"
+                      ? "destructive"
+                      : incident.severity === "error"
+                      ? "default"
+                      : "outline"
+                  }
+                >
+                  {incident.severity}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {new Date(incident.timestamp).toLocaleString()}
+                </p>
+                <p className="text-sm truncate">{incident.description}</p>
+                <div className="flex justify-between items-center">
+                  <Badge variant="outline">{incident.status}</Badge>
+                  <span className="text-xs text-gray-500">
+                    {incident.sourceIp}
+                  </span>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleAskAgent(incident)}
+                    className="flex items-center gap-1"
+                  >
+                    <Bot className="h-4 w-4" />
+                    Ask Agent
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Confirmed Threat')}>
-                        <AlertTriangle className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Confirmed Threat</p>
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleTagIncident(incident, 'Needs Review')}>
-                        <MessageSquare className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Needs Review</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="outline" size="icon" onClick={() => handleAskAgentforce(incident)}>
-                        <Bot className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Ask Agentforce</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      {selectedIncidents.length > 0 && (
-        <div className="sticky bottom-0 bg-secondary p-4 rounded-md shadow-lg">
-          <h3 className="text-lg font-semibold mb-2">Triage Panel</h3>
-          <div className="flex flex-wrap gap-4">
-            <Button onClick={handleExportSelected}>Export Selected</Button>
-            <Button onClick={handleMarkAsResolved}>Mark as Resolved</Button>
-            <Button onClick={handleEscalateToTier2}>Escalate to Tier 2</Button>
-          </div>
-        </div>
+      {selectedIncident && (
+        <AIChatDialog 
+          incident={selectedIncident} 
+          open={isAIChatOpen} 
+          onOpenChange={setIsAIChatOpen} 
+        />
       )}
-                  <Table>
-                      <TableCaption>A list of security incidents and their MITRE ATT&amp;CK techniques.</TableCaption>
-                      <TableHeader>
-                          <TableRow>
-                              <TableHead className="w-[100px]">Time</TableHead>
-                              <TableHead>Source IP</TableHead>
-                              <TableHead>Threat Level</TableHead>
-                              <TableHead>Description</TableHead>
-                              <TableHead>MITRE Tactic</TableHead>
-                              <TableHead>MITRE Technique</TableHead>
-                          </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                          {incidents.map((incident) => (
-                              <TableRow key={incident.id}>
-                                  <TableCell className="font-medium">{incident.time}</TableCell>
-                                  <TableCell>{incident.sourceIp}</TableCell>
-                                  <TableCell>{incident.threatLevel}</TableCell>
-                                  <TableCell>{incident.description}</TableCell>
-                                  <TableCell className={incident.mitreTactic === 'N/A' ? 'text-muted-foreground' : ''}>
-                                      {incident.mitreTactic}
-                                  </TableCell>
-                                  <TableCell className={incident.mitreTechnique === 'N/A' ? 'text-muted-foreground' : ''}>
-                                      {incident.mitreTechnique}
-                                  </TableCell>
-                              </TableRow>
-                          ))}
-                      </TableBody>
-                  </Table>
-          <section className={cn(
-              isChatModalOpen || isActivityFeedOpen ? 'absolute' : 'relative',
-              'flex flex-col',
-              isChatModalOpen && isActivityFeedOpen ? 'md:flex-row' : '',
-              'items-end justify-end gap-4'
-          )}>
-          {isChatModalOpen && selectedIncident && (
-            <ChatDialog
-              messages={messages}
-              incident={selectedIncident}
-              isLoading={isLoading}
-              onSendMessage={handleSendMessage}
-              onClose={handleCloseModal}
-              setMessages={setMessages}
-            />)}
-              <Button onClick={() => setIsActivityFeedOpen(!isActivityFeedOpen)}>
-                {isActivityFeedOpen ? "Hide Activity Feed" : "Show Activity Feed"}
-              </Button>
-              {isActivityFeedOpen && (
-                  <ActivityFeedOverlay
-                    events={[
-                      {
-                        id: '1',
-                        type: 'new_incident',
-                        timestamp: new Date().toISOString(),
-                        source: 'System',
-                        message: 'High severity incident detected: SSH brute force from 203.0.113.5'
-                      },
-                      {
-                        id: '2',
-                        type: 'agent_response',
-                        timestamp: new Date().toISOString(),
-                        source: 'Agentforce',
-                        message: 'Recommended firewall block: 203.0.113.0/24'
-                      },
-                    ]}
-                  />
-                )}
-                  </section>
-    </>
+    </div>
   );
-};
-
-export default IncidentsPage;
+} 

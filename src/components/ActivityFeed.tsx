@@ -154,6 +154,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({events}) => {
     setIsChatOpen(!isChatOpen);
   }
 
+  const handleValueChange = (value: string) => {
+    setFilter(value as ActivitySource | 'all');
+  };
+
   return (
     <div className="bg-[#1e1e1e] text-white rounded-md border shadow-md opacity-90 overflow-hidden flex flex-col">
       <div className="bg-[#333] p-2 cursor-move flex items-center justify-between">
@@ -161,13 +165,19 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({events}) => {
           Live Activity Feed
         </h3>
         <div className="flex gap-2 items-center">
-          <Button variant="ghost" size="icon" onClick={toggleOpenState}>
+          <Button 
+            className="hover:bg-accent hover:text-accent-foreground h-10 w-10"
+            onClick={toggleOpenState}
+          >
             {isOpen ? <ChevronDown className="h-4 w-4"/> : <ChevronUp className="h-4 w-4"/>}
           </Button>
           {isOpen && (
-            <Button variant="ghost" size="icon" onClick={() => {
-              setIsOpen(false);
-            }}>
+            <Button 
+              className="hover:bg-accent hover:text-accent-foreground h-10 w-10"
+              onClick={() => {
+                setIsOpen(false);
+              }}
+            >
               <X className="h-4 w-4"/>
             </Button>
           )}
@@ -175,7 +185,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({events}) => {
       </div>
       {isOpen && (
         <div className="flex flex-col h-full">
-          <Select onValueChange={value => setFilter(value as ActivitySource | 'all')}>
+          <Select onValueChange={handleValueChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder="All Sources"/>
             </SelectTrigger>
@@ -202,7 +212,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({events}) => {
             ))}
           </ScrollArea>
           <div className="flex p-2 justify-between">
-            <Button variant="secondary" size="sm" onClick={toggleRunning}>
+            <Button 
+              className="bg-secondary text-secondary-foreground hover:bg-secondary/80 h-9 rounded-md px-3"
+              onClick={toggleRunning}
+            >
               {isRendering ? <Pause className="h-4 w-4 mr-2"/> : <Play className="h-4 w-4 mr-2"/>}
               {isRendering ? 'Pause' : 'Resume'}
             </Button>
